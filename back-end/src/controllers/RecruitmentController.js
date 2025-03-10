@@ -1,5 +1,4 @@
 const Recruitment = require("../models/RecruitmentModel");
-const bcrypt = require('bcrypt');
 const mongoose = require('mongoose')
 
 const createRecruitment = async (req, res, next) => {
