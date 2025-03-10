@@ -3,18 +3,25 @@ const bcrypt = require('bcrypt')
 
 const userSchema = new mongoose.Schema(
     {
-        first_name: { type: String, required: true },
-        last_name: { type: String, required: true },
-        date_of_birth: { type: Date, required: false },  // Changed to Date
-        email: { type: String, required: true, unique: true },
-        password: { type: String, required: true },
+        roll_number: { type: String, required: true , unique: true},
+        first_name: { type: String, required: [true, 'First name is require'] },
+        last_name: { type: String, required: [true, 'Last name is require'] },
+        avatar: { type: String },
+        gender: { type: String, enum: ["MALE", "FEMALE", "OTHER"] },
+        date_of_birth: { type: Date, required: false },
+        email: { type: String, required: [true, 'Email is require'], unique: true },
+        password: { type: String, required: [true, 'Password is require'] },
         role: {
             type: String,
             enum: ["ADMIN", "MENTOR", "CANDIDATE", "INTERN", "HR"],
             default: "CANDIDATE"
         },
-        phone: { type: String, required: true },  // Changed to String
+        phone: { type: String, required: [true, 'Phone is require'] },
+        specialization: { type: String },
         last_login: { type: Date },  // Changed to Date
+        is_active: {
+            type: Boolean, default: true, required: false
+        },
         access_token: { type: String, required: false },
         refresh_token: { type: String, required: false },
     }
