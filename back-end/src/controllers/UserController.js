@@ -164,16 +164,16 @@ const updateUser = async (req, res, next) => {
         next(e)
     }
 }
-const getAllUsers = async () => {
+const getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find({}, { password: 0 }); // Không trả về mật khẩu
-        resolve({
+        res.status(200).json({
             status: 'OK',
             message: 'Get all users successfully',
             data: users
         });
     } catch (e) {
-        reject(e);
+        next(e);
     }
 }
 const changePassword = async (req, res, next) => {
