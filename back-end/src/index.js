@@ -11,6 +11,8 @@ const port = process.env.PORT || 9999
 
 
 app.use(bodyParser.json())
+routes(app);
+
 //middleware
 app.use((err, req, res, next) => {
     let statusCode = err.statusCode || 500;
@@ -30,8 +32,12 @@ app.use((err, req, res, next) => {
             errors
         });
     }
+
+    return res.status(statusCode).json({
+        status: statusCode,
+        message: message
+    })
 });
-routes(app);
 mongoose.connect(`${process.env.MONGO_DB}`)
     .then(() => {
         console.log('Connect DB success!')
