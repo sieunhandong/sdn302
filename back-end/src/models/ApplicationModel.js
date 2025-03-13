@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const projectSchema = new mongoose.Schema(
+const applicationSchema = new mongoose.Schema(
     {
         applicant_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         mentor_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -10,5 +10,5 @@ const projectSchema = new mongoose.Schema(
     }
 );
 
-const Project = mongoose.model("Project", projectSchema);
-module.exports = Project;
+const Application = mongoose.model("Application", applicationSchema);
+module.exports = Application;
