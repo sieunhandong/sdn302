@@ -86,11 +86,15 @@ const listProjectDetail = async (req, res, next) => {
                 message: "Project not found"
             })
         }
+        // Tìm tất cả Positions liên quan đến Project
+        const positions = await Position.find({ project_id: id });
+
         res.status(200).json({
             status: "SUCCESS",
-            message: "List project detail",
+            message: "Project details retrieved successfully",
             data: {
                 project,
+                positions,
             },
         });
     } catch (error) {
@@ -164,12 +168,39 @@ const deleteProject = async (req, res, next) => {
     }
 }
 
+// Lấy danh sách tất cả Positions của một Project
+const getProjectPositions = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        console.log("ID found:", id);
+        // Lấy danh sách Positions theo project_id
+        const positions = await Position.find({ project_id: id });
+        console.log("Positions found:", positions);
+        if (positions.length === 0) {
+            return res.status(404).json({
+                status: "ERR",
+                message: "No positions found for this project",
+            });
+        }
+        console.log("Positions found:", positions);
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Positions retrieved successfully",
+            data: positions,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createProject,
     listAllProjects,
     listProjectDetail,
     searchProjectByName,
     updateProject,
-    deleteProject
+    deleteProject,
+    getProjectPositions
 };
 

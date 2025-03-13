@@ -10,5 +10,6 @@ router.get("/list-project-detail/:id", projectController.listProjectDetail);
 router.get("/search-project-by-name/:name", projectController.searchProjectByName);
 router.put("/update-project/:id", authAdminMiddleware, projectController.updateProject);
 router.delete("/delete-project/:id", authAdminMiddleware, projectController.deleteProject);
+router.get("/get-project-positions/:id", projectController.getProjectPositions);
 
 module.exports = router;
