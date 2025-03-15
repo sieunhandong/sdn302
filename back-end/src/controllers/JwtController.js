@@ -24,7 +24,6 @@ const genneralRefreshToken = (payload) => {
 const refreshTokenJwtService = (token) => {
     return new Promise((resolve, reject) => {
         try {
-            console.log("token", token)
             jwt.verify(token, process.env.REFRESH_TOKEN, async (err, user) => {
                 if (err) {
                     resolve({
@@ -32,10 +31,9 @@ const refreshTokenJwtService = (token) => {
                         message: 'The authentication'
                     })
                 }
-                const { payload } = user
                 const access_token = await genneralAccessToken({
-                    id: payload.id,
-                    isAdmin: payload?.isAdmin
+                    id: user.payload.id,
+                    role: user.payload.role
                 })
                 console.log('access_token', access_token)
                 resolve({
