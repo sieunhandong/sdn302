@@ -62,10 +62,27 @@ function HeaderComponent() {
           <Link to="/project" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
             Recruitment
           </Link>
-          <Link to="/notification" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
-            Notification
-          </Link>
+
+          {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'CANDIDATE') && (
+            <Link to="/" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+              Notification
+            </Link>
+          )}
+          {/* Role Intern & Mentor được xem Notification */}
+          {(user?.role === 'INTERN' || user?.role === 'MENTOR') && (
+            <Link to="/notification" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+              Notification
+            </Link>
+          )}
+
+          {/* Role Intern & Mentor được xem Interview Schedule */}
+          {(user?.role === 'Intern' || user?.role === 'Mentor') && (
+            <Link to="/interview-schedule" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+              Interview Schedule
+            </Link>
+          )}
         </Col>
+
 
         <Col span={6} style={{ display: "flex", gap: "20px", alignItems: 'center' }}>
           <Loading isLoading={loading}>
