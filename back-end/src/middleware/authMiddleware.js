@@ -116,7 +116,14 @@ const authInternMiddleware = (req, res, next) => {
 }
 
 const authUserMiddleware = (req, res, next) => {
-    const token = req.headers.token.split(' ')[1]
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({
+            message: 'No token provided',
+            status: 'ERROR'
+        });
+    }
+    const token = authHeader.split(' ')[1];
     const userId = req.params.id
     jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
         if (err) {
@@ -126,7 +133,7 @@ const authUserMiddleware = (req, res, next) => {
             })
         }
         const { payload } = user
-        if (payload?.isAdmin || payload?.id === userId) {
+        if (payload?.role || payload?.id === userId) {
             next();
         } else {
             return res.status(404).json({

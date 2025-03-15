@@ -1,6 +1,7 @@
 const User = require("../models/UserModel");
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose')
+const JwtController = require('./JwtController')
 const { genneralRefreshToken, genneralAccessToken } = require("./JwtController");
 
 const createUser = async (req, res, next) => {
@@ -104,6 +105,15 @@ const login = async (req, res, next) => {
             id: user.id,
             role: user.role
         })
+
+        res.cookie("refresh_token", refresh_token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Strict"
+        }
+
+
+        )
         res.status(201).json({
             status: "success",
             message: "User login successfully",
@@ -133,7 +143,7 @@ const updateUser = async (req, res, next) => {
 
         // Kiểm tra xem id có hợp lệ không trước khi truy vấn
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return reject({ statusCode: 400, message: "Invalid User ID format" });
+            return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
         }
         const user = await User.findOne({
             _id: id
@@ -238,10 +248,82 @@ const changePassword = async (req, res, next) => {
         next(error)
     }
 };
+
+const refreshToken = async (req, res) => {
+    try {
+        // Lấy refresh token từ localStorage (giả sử client gửi lên)
+        const { refresh_token } = req.body;
+        console.log("Received refresh_token from localStorage:", refresh_token);
+
+        if (!refresh_token) {
+            return res.status(401).json({
+                status: 'ERR',
+                message: 'Refresh token is required'
+            });
+        }
+
+        // Kiểm tra và tạo access token mới
+        const response = await JwtController.refreshTokenJwtService(refresh_token);
+
+        return res.status(200).json({
+            status: 'SUCCESS',
+            access_token: response.access_token
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: error.message
+        });
+    }
+};
+
+const getDetailsUser = async (req, res, next) => {
+    console.log(req.params)
+    try {
+
+        const userId = req.params.id
+        const checkUser = await User.findOne({
+            _id: userId
+        })
+        if (checkUser === null) {
+            return res.status(404).json({
+                status: 'ERR',
+                message: 'The user is not defined'
+            })
+        }
+
+        return res.status(200).json({
+            status: 'OK',
+            message: 'SUCCESS',
+            data: checkUser
+        })
+    } catch (e) {
+        next(e)
+    }
+}
+
+const logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('refresh_token')
+        return res.status(200).json({
+            status: 'OK',
+            message: 'Lou out success'
+        });
+    } catch (e) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: e.message
+        });
+    }
+}
 module.exports = {
     createUser,
     login,
     updateUser,
     getAllUsers,
-    changePassword
+    changePassword,
+    refreshToken,
+    getDetailsUser,
+    logoutUser
 };
