@@ -17,33 +17,41 @@ const SignUpPage = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setComfirmPassword] = useState('');
     const [isSigningIn, setIsSigningIn] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(null);
+
 
     const mutation = useMutatioHooks(
         data => UserService.signUpUser(data)
     )
 
     const { data, isLoading, isError, isSuccess } = mutation
-
+    console.log('data', mutation)
     useEffect(() => {
         if (isSuccess) {
             message.success()
             handleNavigateSignIn()
         } else if (isError) {
-            message.error()
+            // Lưu thông báo lỗi từ backend
+            setErrorMessage(data?.message || "Account creation failed.");
         }
-    })
+    }, [isSuccess, isError, data])
 
     const handleOnchangeEmail = (value) => {
         setEmail(value)
+        setErrorMessage(null);
     }
     const handleOnchangePassword = (value) => {
         setPassword(value)
+        setErrorMessage(null);
     }
+
     const handleOnchangeConfirmPassword = (value) => {
         setComfirmPassword(value)
+        setErrorMessage(null);
     }
 
     const handleSignUp = () => {
+        setErrorMessage(null);
         setIsSigningIn(true); // Chỉ bật isLoading khi bấm nút đăng nhập
         mutation.mutate(
             { email, password, confirmPassword },
@@ -53,7 +61,7 @@ const SignUpPage = () => {
                 },
             }
         );
-        console.log('sign-in', email, password);
+        console.log('sign-up', email, password, confirmPassword);
     };
     const navigate = useNavigate();
     const handleNavigateSignIn = () => {
@@ -65,8 +73,10 @@ const SignUpPage = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.53)', height: '100vh' }}>
             <div style={{ width: '800px', height: '445px', borderRadius: '6px', background: '#fff', display: 'flex' }}>
                 <WrapperContainerLeft>
-                    <h1>Xin chao</h1>
-                    <p>Dang nhap va tao tai khoan</p>
+                    <h1>Hello</h1>
+                    <p>Sign In and Sign Up</p>
+                    {errorMessage && <span style={{ color: 'red' }}>{errorMessage}</span>}
+
                     <InputFormComponent style={{ marginBottom: '10px' }} placeholder="abc@gmail.com"
                         value={email} onChange={handleOnchangeEmail} />
                     <div style={{ position: 'relative' }}>
@@ -128,11 +138,11 @@ const SignUpPage = () => {
                             styleTextButton={{ color: '#fff', fontSize: '15px', fontWeight: '700' }}
                         ></ButtonComponent>
                     </Loading>
-                    <p>Bạn đã có tài khoản ? <WrapperTextLight onClick={handleNavigateSignIn} style={{ cursor: 'pointer' }}>Đăng nhập</WrapperTextLight></p>
+                    <p>Do you have an account? <WrapperTextLight onClick={handleNavigateSignIn} style={{ cursor: 'pointer' }}>Sign In</WrapperTextLight></p>
                 </WrapperContainerLeft>
                 <WrapperContainerRight>
                     <Image src={login} preview={false} alt="image-logo" height="203px" width="203px" />
-                    <h4>Tim Kiem viec lam tai IM</h4>
+                    <h4>Find a job at IM</h4>
                 </WrapperContainerRight>
             </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Badge, Button, Col, Popover } from 'antd';
-import { WrapperContentPopup, WrapperHeader, WrapperHeaderAccount, WrapperTextHeader, WrapperTextHeaderSmall } from './style';
+import { WrapperContentPopup, WrapperHeader, WrapperHeaderAccount, WrapperLink, WrapperTextHeader, WrapperTextHeaderSmall } from './style';
 import Search from 'antd/es/transfer/search';
 import { CaretDownOutlined, MenuOutlined, UserOutlined } from '@ant-design/icons'
 import ButtonInputSearch from '../ButtonInputSearch/ButtonInputSearch';
@@ -32,13 +32,23 @@ function HeaderComponent() {
     await UserService.logoutUser()
     dispatch(resetUser())
     setloading(false)
+    navigate('/')
 
   }
 
   const content = (
     <div>
-      <WrapperContentPopup onClick={handleLogout}>Dang xuat</WrapperContentPopup>
-      <WrapperContentPopup>Thong tin nguoi dung</WrapperContentPopup>
+      <WrapperContentPopup onClick={handleLogout}>Log Out</WrapperContentPopup>
+      <WrapperContentPopup>
+        <WrapperLink to="/profile" >
+          Information Profile
+        </WrapperLink>
+      </WrapperContentPopup>
+      <WrapperContentPopup>
+        <WrapperLink to="/change-password" >
+          Change Password
+        </WrapperLink>
+      </WrapperContentPopup>
     </div>
   )
 

@@ -1,4 +1,5 @@
 import { Row } from "antd";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 export const WrapperHeader = styled(Row)`
@@ -28,6 +29,14 @@ color: #fff;
 `
 export const WrapperContentPopup = styled.p`
   cursor: pointer;
+  &:hover {
+    background: rgb(26,148,255);
+    color: #ffff;
+  } 
+`
+export const WrapperLink = styled(Link)`
+  cursor: pointer;
+  color: black;
   &:hover {
     background: rgb(26,148,255);
     color: #ffff;
