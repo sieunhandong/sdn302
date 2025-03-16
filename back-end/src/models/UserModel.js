@@ -42,7 +42,7 @@ userSchema.pre("save", async function (next) {
 
         // Lặp để tránh trùng roll_number
         while (isDuplicate) {
-            newRollNumber = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo số ngẫu nhiên 6 chữ số
+            newRollNumber = `RN${Math.floor(100000 + Math.random() * 900000)}`; 
             const existingUser = await mongoose.model("User").findOne({ roll_number: newRollNumber });
             if (!existingUser) {
                 isDuplicate = false;

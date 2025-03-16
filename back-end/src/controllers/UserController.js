@@ -6,31 +6,28 @@ const { genneralRefreshToken, genneralAccessToken } = require("./JwtController")
 
 const createUser = async (req, res, next) => {
     try {
-        const { roll_number, first_name, last_name, avatar, gender, date_of_birth, email, password, confirmPassword, phone } = req.body;
-        console.log(req.body)
+        const { roll_number, first_name,
+            last_name, avatar,
+            gender, date_of_birth,
+            email, password,
+            confirm_password, phone,
+            role, is_active
+        } = req.body;
+        console.log("req.body", req.body)
         const existingCustomer = await User.findOne({ email });
         if (existingCustomer) {
             return res.status(400).json({
-                status: 400,
-                errorType: "Payload Exists",
-                message: "Add customer failed",
-                data:
-                {
-                    field: "email",
-                    message: "Email already exists"
-
-                }
-
+                status: 'ERR',
+                message: "Email already exists"
             });
         }
-        if (password !== confirmPassword) {
+        if (password !== confirm_password) {
             return res.status(200).json({
                 status: 'ERR',
                 message: 'The password is equal confirmPassword'
             })
         }
         const newCustomer = new User({
-            roll_number,
             first_name,
             last_name,
             avatar,
@@ -38,7 +35,7 @@ const createUser = async (req, res, next) => {
             date_of_birth,
             email,
             password,
-            phone
+            phone, role, is_active
         });
 
         await newCustomer.save();
@@ -363,6 +360,35 @@ const logoutUser = async (req, res) => {
         });
     }
 }
+const deleteUser = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // Kiểm tra xem id có hợp lệ không trước khi truy vấn
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
+        }
+        const user = await User.findOne({
+            _id: id
+        })
+
+        if (user === null) {
+            res.status(400).json({
+                status: 'OK',
+                message: 'The user is not defined'
+            })
+        }
+
+        // Cập nhật status thành false
+        await User.findByIdAndDelete(id);
+        res.status(204).json({
+            status: "SUCCESS",
+            message: "Deleted user success",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createUser,
     login,
@@ -372,5 +398,6 @@ module.exports = {
     refreshToken,
     getDetailsUser,
     logoutUser,
-    register
+    register,
+    deleteUser
 };

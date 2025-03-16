@@ -25,6 +25,7 @@ export const getDetailsProject = async (id) => {
 }
 
 export const updateProject = async (id, data, token) => {
+    console.log('token-update proejct', token)
     const res = await axios.put(`${process.env.REACT_APP_API_URL_BACKEND}/project/update-project/${id}`,
         data,
         {
@@ -41,7 +42,7 @@ export const deleteProject = async (id, token) => {
     const res = await axios.patch(`${process.env.REACT_APP_API_URL_BACKEND}/project/change-status-project/${id}`,
         {
             headers: {
-                "Authorization": `Bearer ${token}`
+                Authorization: `Bearer ${token}`
             }
         }
     );
