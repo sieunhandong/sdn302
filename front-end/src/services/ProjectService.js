@@ -47,3 +47,13 @@ export const deleteProject = async (id, token) => {
     );
     return res.data;
 };
+
+export const getProjectPositions = async (id) => {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/project/get-project-positions/${id}`);
+    return res.data;
+};
+
+export const getProjectByUserId = async (id) => {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/project/get-project-by-user-id/${id}`);
+    return res.data;
+};
