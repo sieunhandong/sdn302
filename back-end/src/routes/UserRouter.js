@@ -3,11 +3,11 @@ const router = express.Router();
 const userController = require("../controllers/UserController");
 const { authMiddleware, authUserMiddleware, authAdminMiddleware, authHRMiddleware } = require("../middleware/authMiddleware");
 
-router.post("/add-user", userController.createUser);
+router.post("/add-user", authAdminMiddleware, userController.createUser);
 router.post("/sign-in", userController.login);
 router.put("/update-user/:id", userController.updateUser);
 router.get("/get-all-user", authAdminMiddleware, userController.getAllUsers);
-// router.delete("/delete-user/:id", authMiddleware, userController.deleteUser);
+router.delete("/delete-user/:id", authAdminMiddleware, userController.deleteUser);
 router.get("/get-details/:id", authUserMiddleware, userController.getDetailsUser);
 router.post('/refresh-token', userController.refreshToken);
 router.post("/change-password", userController.changePassword);
