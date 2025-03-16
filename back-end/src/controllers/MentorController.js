@@ -3,6 +3,7 @@ const User = require("../models/UserModel");
 
 const mongoose = require('mongoose')
 
+//Xem thong tin mentor, seaarch mentor
 const getMentorInfo = async (req, res, next) => {
     try {
         let { name } = req.query; // Lấy tham số tìm kiếm từ query
@@ -35,7 +36,7 @@ const getMentorInfo = async (req, res, next) => {
 
         // Truy vấn danh sách dự án theo mentor ID
         const projects = await Project.find({ mentor_id: { $in: mentorIds } })
-            .select("mentor_id project_name project_start project_end")
+            .select("mentor_id _id project_name project_start project_end")
             .lean();
 
         // Kết hợp mentor với danh sách dự án của họ
@@ -43,6 +44,7 @@ const getMentorInfo = async (req, res, next) => {
             const mentorProjects = projects
                 .filter(project => project.mentor_id.toString() === mentor._id.toString())
                 .map(project => ({
+                    project_id: project._id,
                     project_name: project.project_name,
                     project_start: project.project_start,
                     project_end: project.project_end
@@ -71,6 +73,8 @@ const getMentorInfo = async (req, res, next) => {
         next(error);
     }
 };
+
+
 
 module.exports = { 
     getMentorInfo 
