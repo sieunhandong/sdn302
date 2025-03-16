@@ -55,6 +55,53 @@ const createUser = async (req, res, next) => {
         next(error);
     }
 };
+const register = async (req, res, next) => {
+    try {
+        const { email, password, confirmPassword } = req.body;
+        console.log(req.body)
+        // Kiểm tra nếu thiếu trường
+        if (!email || !password || !confirmPassword) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Missing required fields',
+                data: {
+                    field: !email ? 'email' : !password ? 'password' : 'confirmPassword',
+                    message: 'This field is required'
+                }
+            });
+        }
+        const existingCustomer = await User.findOne({ email });
+        if (existingCustomer) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: "Email already exists"
+            });
+        }
+        if (password !== confirmPassword) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The password is equal confirmPassword'
+            })
+        }
+        const newCustomer = new User({
+            email,
+            password
+        });
+
+        await newCustomer.save();
+
+        res.status(201).json({
+            status: "success",
+            message: "User create successfully",
+            data: {
+                customer: newCustomer
+            }
+
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -108,8 +155,8 @@ const login = async (req, res, next) => {
 
         res.cookie("refresh_token", refresh_token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "Strict"
+            secure: true,
+            sameSite: "strict"
         }
 
 
@@ -157,7 +204,7 @@ const updateUser = async (req, res, next) => {
         }
         const updateUser = await User.findByIdAndUpdate(id, req.body, { new: true })
 
-        res.status(200).json({
+        return res.status(200).json({
             status: 200,
             message: 'User updated success',
             data: {
@@ -251,9 +298,8 @@ const changePassword = async (req, res, next) => {
 
 const refreshToken = async (req, res) => {
     try {
-        // Lấy refresh token từ localStorage (giả sử client gửi lên)
-        const { refresh_token } = req.body;
-        console.log("Received refresh_token from localStorage:", refresh_token);
+        const refresh_token = req.cookies.refresh_token;
+        // console.log("Received refresh_token from Cookie:", refresh_token);
 
         if (!refresh_token) {
             return res.status(401).json({
@@ -262,7 +308,6 @@ const refreshToken = async (req, res) => {
             });
         }
 
-        // Kiểm tra và tạo access token mới
         const response = await JwtController.refreshTokenJwtService(refresh_token);
 
         return res.status(200).json({
@@ -277,6 +322,7 @@ const refreshToken = async (req, res) => {
         });
     }
 };
+
 
 const getDetailsUser = async (req, res, next) => {
     console.log(req.params)
@@ -325,5 +371,6 @@ module.exports = {
     changePassword,
     refreshToken,
     getDetailsUser,
-    logoutUser
+    logoutUser,
+    register
 };

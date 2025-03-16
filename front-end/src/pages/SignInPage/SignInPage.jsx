@@ -9,22 +9,24 @@ import { useNavigate } from 'react-router-dom'
 import * as UserService from '../../services/UserService'
 import { useMutatioHooks } from '../../hooks/useMutationHook'
 import Loading from '../../components/LoadingComponent/Loading'
-import * as message from '../../components/Message/Message'
 import { jwtDecode } from "jwt-decode";
 import { useDispatch } from 'react-redux'
 import { updateUser } from '../../redux/slides/userSlide'
+
 const SignInPage = () => {
     const [isShowPassword, setIsShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSigningIn, setIsSigningIn] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(""); // Thêm state lưu lỗi từ backend
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const mutation = useMutatioHooks(
         data => UserService.loginUser(data)
+    );
 
-    )
     console.log("mutation", mutation)
     const { data, isLoading, isError, isSuccess } = mutation
 
@@ -32,7 +34,7 @@ const SignInPage = () => {
         if (isSuccess) {
             navigate('/');
             localStorage.setItem('access_token', JSON.stringify(data?.data?.access_token));
-            localStorage.setItem('refresh_token', JSON.stringify(data?.data?.refresh_token));
+            // localStorage.setItem('refresh_token', JSON.stringify(data?.data?.refresh_token));
 
             const accessToken = data?.data?.access_token;
             if (accessToken) {
@@ -46,30 +48,29 @@ const SignInPage = () => {
         }
     }, [isSuccess]);
 
-
-
     const handleGetDetailsUser = async (id, token) => {
         const res = await UserService.getDetailsUser(id, token);
 
-        console.log("✅ Toàn bộ Response từ API:", res);
-        console.log("🎯 res.data:", res?.data);
+        // console.log("✅ Toàn bộ Response từ API:", res);
+        // console.log("🎯 res.data:", res?.data);
         if (res?.data) {
             dispatch(updateUser({ ...res?.data, access_token: token }));
         }
     };
 
-
     const handleOnchangeEmail = (value) => {
-        setEmail(value)
-    }
+        setEmail(value);
+    };
     const handleOnchangePassword = (value) => {
-        setPassword(value)
-    }
+        setPassword(value);
+    };
     const handleNavigateSignUp = () => {
-        navigate('/sign-up')
-    }
+        navigate('/sign-up');
+    };
+
     const handleSignin = () => {
         setIsSigningIn(true);
+        setErrorMessage(""); // Reset lỗi trước khi gửi yêu cầu mới
 
         console.log("Gửi yêu cầu đăng nhập với:", { email, password });
 
@@ -81,6 +82,13 @@ const SignInPage = () => {
                 },
                 onError: (error) => {
                     console.error("Lỗi từ API:", error);
+
+                    // Nếu có phản hồi từ API
+                    if (error.response) {
+                        setErrorMessage(error.response.data.message || "Đăng nhập thất bại!");
+                    } else {
+                        setErrorMessage("Lỗi kết nối! Vui lòng thử lại.");
+                    }
                 },
                 onSettled: () => {
                     setIsSigningIn(false);
@@ -89,13 +97,12 @@ const SignInPage = () => {
         );
     };
 
-
     return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.53)', height: '100vh' }}>
             <div style={{ width: '800px', height: '445px', borderRadius: '6px', background: '#fff', display: 'flex' }}>
                 <WrapperContainerLeft>
-                    <h1>Xin chao</h1>
-                    <p>Dang nhap va tao tai khoan</p>
+                    <h1>Hello</h1>
+                    <p>Sign In and Sign Up</p>
                     <InputFormComponent style={{ marginBottom: '10px' }} placeholder="abc@gmail.com"
                         value={email} onChange={handleOnchangeEmail} />
                     <div style={{ position: 'relative' }}>
@@ -105,22 +112,19 @@ const SignInPage = () => {
                                 zIndex: 10,
                                 position: 'absolute',
                                 top: '4px',
-                                right: '8px'
-                            }}>{
-                                isShowPassword ? (
-                                    <EyeFilled />
-                                ) : (
-                                    <EyeInvisibleFilled />
-                                )
-                            }
-
+                                right: '8px',
+                                cursor: 'pointer'
+                            }}>
+                            {isShowPassword ? <EyeFilled /> : <EyeInvisibleFilled />}
                         </span>
-                        <InputFormComponent style={{ marginBottom: '10px' }} placeholder="password" type={isShowPassword ? "text" : "password"}
+                        <InputFormComponent style={{ marginBottom: '10px' }} placeholder="Password" type={isShowPassword ? "text" : "password"}
                             value={password} onChange={handleOnchangePassword} />
                     </div>
-                    {data?.status === 'ERR' && <span style={{ color: 'red' }}>{data?.message}</span>}
-                    <Loading isLoading={isSigningIn}>
 
+                    {/*Hiển thị lỗi từ API */}
+                    {errorMessage && <span style={{ color: 'red', marginBottom: '10px', display: 'block' }}>{errorMessage}</span>}
+
+                    <Loading isLoading={isSigningIn}>
                         <ButtonComponent
                             disabled={!email.length || !password.length}
                             onClick={handleSignin}
@@ -133,20 +137,21 @@ const SignInPage = () => {
                                 borderRadius: '4px',
                                 margin: '26px 0 10px'
                             }}
-                            textButton={'Dang nhap'}
+                            textButton={'Sign In'}
                             styleTextButton={{ color: '#fff', fontSize: '15px', fontWeight: '700' }}
-                        ></ButtonComponent>
+                        />
                     </Loading>
-                    <p><WrapperTextLight>Quen mat khau</WrapperTextLight></p>
-                    <p>Chua co tai khoan ? <WrapperTextLight onClick={handleNavigateSignUp}>Tao tai khoan</WrapperTextLight></p>
+
+                    <p><WrapperTextLight>Forgot Password?</WrapperTextLight></p>
+                    <p>Don't have an account? <WrapperTextLight onClick={handleNavigateSignUp}>Sign Up</WrapperTextLight></p>
                 </WrapperContainerLeft>
                 <WrapperContainerRight>
                     <Image src={login} preview={false} alt="image-logo" height="203px" width="203px" />
-                    <h4>Mua sam tai MiHoo</h4>
+                    <h4>Find a job at IM</h4>
                 </WrapperContainerRight>
             </div>
         </div>
     )
 }
 
-export default SignInPage
+export default SignInPage;
