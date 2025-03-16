@@ -1,5 +1,9 @@
 const Intern = require("../models/InternModel");
-const Report = require("../models/ReportModel")
+const Report = require("../models/ReportModel");
+const User = require("../models/UserModel");
+const Project = require("../models/ProjectModel");
+const Position = require("../models/PositionModel");
+
 const mongoose = require('mongoose')
 
 const createIntern = async (req, res, next) => {
@@ -103,7 +107,43 @@ const createReport = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get list interns by project id
+const getInternsByProject = async (req, res, next) => {
+    try {
+        const { project_id } = req.params;
+
+        if (!project_id) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Project ID is required",
+            });
+        }
+
+        const interns = await Intern.find({ project_id })
+            .populate("user_id", "roll_number first_name last_name avatar gender date_of_birth phone specialization is_active")
+            .populate("mentor_id", "first_name last_name")
+            .populate("position_id", "position_name");
+
+        if (!interns.length) {
+            return res.status(404).json({
+                status: "ERR",
+                message: "No interns found for this project",
+            });
+        }
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Interns retrieved successfully",
+            data: interns,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createIntern,
-    createReport
+    createReport,
+    getInternsByProject,
 };

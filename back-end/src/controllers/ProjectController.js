@@ -173,10 +173,100 @@ const updateProject = async (req, res, next) => {
     }
 };
 
+// Search project by name
+const searchProjectByName = async (req, res, next) => {
+    try {
+        const { name } = req.params;
+        const projects = await Project.find({ project_name: new RegExp(name.trim(), 'i') }).populate('mentor_id');
+
+        if (projects.length === 0) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Search project by name",
+            data: { projects },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Lấy danh sách tất cả Positions của một Project
+const getProjectPositions = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        console.log("ID found:", id);
+        // Lấy danh sách Positions theo project_id
+        const positions = await Position.find({ project_id: id });
+        console.log("Positions found:", positions);
+        if (positions.length === 0) {
+            return res.status(404).json({
+                status: "ERR",
+                message: "No positions found for this project",
+            });
+        }
+        console.log("Positions found:", positions);
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Positions retrieved successfully",
+            data: positions,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getProjectByUserId = async (req, res, next) => {
+   try {
+       const { userId } = req.params;
+       console.log('id=>', userId);
+       
+       if (!mongoose.Types.ObjectId.isValid(userId)) {
+           return res.status(400).json({
+               status: "ERR",
+               message: "Invalid userId",
+           });
+       }
+
+       const mentorObjectId = new mongoose.Types.ObjectId(userId);
+       const projects = await Project.find({ mentor_id: mentorObjectId })
+           .populate('mentor_id');
+
+       if (!projects || projects.length === 0) {
+           return res.status(404).json({
+               status: "ERR",
+               message: "No projects found for this user",
+           });
+       }
+
+       const formattedProjects = projects.map(project => ({
+           ...project._doc,
+           mentor_name: `${project.mentor_id.last_name} ${project.mentor_id.first_name}`,
+           project_start: new Date(project.project_start).toLocaleDateString("vi-VN"),
+           project_end: new Date(project.project_end).toLocaleDateString("vi-VN"),
+       }));
+
+       res.status(200).json({
+           status: "SUCCESS",
+           message: "Projects retrieved successfully",
+           data: formattedProjects,
+       });
+   } catch (error) {
+       next(error);
+   }
+};
+
 module.exports = {
     createProject,
-    listProjectDetail,
     listAllProjects,
+    listProjectDetail,
+    searchProjectByName,
+    updateProject,
     deleteProject,
-    updateProject
+    getProjectPositions,
+    getProjectByUserId
 };
+
