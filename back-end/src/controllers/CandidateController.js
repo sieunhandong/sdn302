@@ -52,7 +52,7 @@ const getCandidatesByMentor = async (req, res, next) => {
 const getCandidatesByProjectId = async (req, res, next) => {
     try {
         const { project_id } = req.params;
-
+        console.log("project_id", project_id)
         // Tìm các vị trí thuộc dự án
         const positions = await Position.find({ project_id }).lean();
         if (!positions.length) return res.status(404).json({ status: "ERR", message: "No positions found for this project" });
@@ -60,7 +60,7 @@ const getCandidatesByProjectId = async (req, res, next) => {
         const positionIds = positions.map(p => p._id);
 
         // Tìm các ứng viên đã apply vào các vị trí trong project
-        const applications = await Application.find({ position_id: { $in: positionIds } }).lean();
+        const applications = await Application.find({ project_id: project_id });
         if (!applications.length) return res.status(404).json({ status: "ERR", message: "No candidates applied for this project" });
 
         const candidateIds = applications.map(a => a.applicant_id);
@@ -76,11 +76,11 @@ const getCandidatesByProjectId = async (req, res, next) => {
             const position = positions.find(p => p._id.equals(app?.position_id));
 
             return {
-                user_id: c.roll_number,
+                roll_number: c.roll_number,
                 full_name: `${c.first_name} ${c.last_name}`,
                 avatar: c.avatar || "default_avatar.png",
                 specialization: c.specialization || "N/A",
-                position_name: position?.position_name || "Unknown",
+                position_name: position?.position_id || "Unknown",
                 date_of_birth: c.date_of_birth,
                 gender: c.gender,
                 phone: c.phone,
@@ -98,7 +98,7 @@ const getCandidatesByProjectId = async (req, res, next) => {
 const acceptCandidate = async (req, res, next) => {
     const session = await mongoose.startSession();
     session.startTransaction();
-    
+
     try {
         const { projectId, candidateId } = req.params;
 
@@ -144,5 +144,59 @@ const acceptCandidate = async (req, res, next) => {
         next(error);
     }
 };
+const apply = async (req, res, next) => {
+    try {
+        const { applicant_id, mentor_id, project_id, position_id } = req.body;
 
-module.exports = { getCandidatesByMentor, getCandidatesByProjectId, acceptCandidate };
+        // Kiểm tra dữ liệu đầu vào
+        if (!applicant_id || !mentor_id || !project_id || !position_id) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Missing required fields",
+            });
+        }
+
+        // Kiểm tra xem ứng viên đã apply vào project này chưa
+        const existingApplication = await Application.findOne({
+            applicant_id,
+            project_id,
+            position_id,
+        });
+
+        if (existingApplication) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "You have already applied for this position in the project",
+            });
+        }
+
+        // Tạo đơn ứng tuyển mới
+        const newApplication = new Application({
+            applicant_id,
+            mentor_id,
+            project_id,
+            position_id,
+            status: true,
+        });
+
+        // Lưu vào database
+        await newApplication.save();
+
+        res.status(201).json({
+            status: "SUCCESS",
+            message: "Application submitted successfully",
+            data: newApplication,
+        });
+
+    } catch (error) {
+        console.error("Error in apply API:", error);
+        next(error);
+    }
+};
+
+module.exports = {
+    getCandidatesByMentor,
+    getCandidatesByProjectId,
+    acceptCandidate,
+    apply
+};

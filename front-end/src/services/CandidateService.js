@@ -2,9 +2,15 @@ import axios from "axios";
 
 export const axiosJWT = axios.create();
 
-export const getCandidatesByMentor = async (id) => {
+export const getCandidatesByMentor = async (id, token) => {
     try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/candidate/get-candidate-info/${id}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/candidate/get-candidate-info/${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
         return res.data;
     } catch (error) {
         console.error("Error fetching mentor details:", error);
@@ -12,9 +18,15 @@ export const getCandidatesByMentor = async (id) => {
     }
 };
 
-export const getCandidatesByProjectId = async (id) => {
+export const getCandidatesByProjectId = async (id, token) => {
     try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/candidate/get-candidate-by-project/${id}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/candidate/get-candidate-by-project/${id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
         return res.data;
     } catch (error) {
         console.error("Error fetching mentor details:", error);

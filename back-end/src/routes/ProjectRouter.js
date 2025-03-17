@@ -20,5 +20,6 @@ router.patch("/change-status-project/:id", authHRMiddleware, projectController.d
 router.put("/update-project/:id", authHRMiddleware, projectController.updateProject);
 // lấy tất cả project của 1 mentor
 router.get("/get-project-by-user-id/:userId", authMentorMiddleware, projectController.getProjectByUserId);
+router.get("/get-project-by-project-id/:projectId", authMentorMiddleware, projectController.getProjectByProjectId);
 
 module.exports = router;

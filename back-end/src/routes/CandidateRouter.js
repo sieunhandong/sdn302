@@ -8,7 +8,8 @@ router.get("/get-candidate-info/:mentor_id", authMentorMiddleware, candidateCont
 // cập nhật candidate lên intern
 router.put("/accept-candidate/projects/:projectId/candidates/:candidateId", authMentorMiddleware, candidateController.acceptCandidate);
 // danh sách candidate ứng tuyển của 1 project
-router.get("/get-candidate-by-project/:project_id", authAdminMiddleware, candidateController.getCandidatesByProjectId);
+router.get("/get-candidate-by-project/:project_id", authMentorMiddleware, candidateController.getCandidatesByProjectId);
+router.post("/candidate-apply", candidateController.apply);
 
 module.exports = router;
 

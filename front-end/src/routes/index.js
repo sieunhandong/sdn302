@@ -83,8 +83,13 @@ export const routes = [
     isShowHeader: true
   },
   {
-    path: "/get-project-by-user-id/:userId",
+    path: "/my-project",
     page: MyProject,
+    isShowHeader: true
+  },
+  {
+    path: "/project-details-for-mentor/:projectId",
+    page: ProjectDetailsPage,
     isShowHeader: true
   },
   {
