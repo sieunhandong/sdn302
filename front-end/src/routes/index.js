@@ -7,7 +7,7 @@ import ProjectManagementPage from "../pages/ProjectManage/ProjectManagePage";
 import ProfilePage from "../pages/ProfilePage/ProfilePage";
 import ChangePasswordPage from "../pages/ChangePasswordPage/ChangePasswordPage";
 import UserManagePage from "../pages/UserManagePage/UserManagePage";
-
+import ReportPage from "../pages/InternReports/InternReports";
 import ApplyProjectPosition from "../pages/ApplyProjectPosition/ApplyProjectPosition";
 import UserInformation from "../pages/UserInformation/UserInformation";
 import InternOfProject from "../pages/InternOfProject/InternOfProject";
@@ -91,4 +91,10 @@ export const routes = [
     page: InterViewSchedule,
     isShowHeader: true,
   },
+  {
+    path: "/report",
+    page: ReportPage,
+    isShowHeader: true
+
+}
 ];
