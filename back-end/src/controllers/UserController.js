@@ -1,25 +1,77 @@
 const User = require("../models/UserModel");
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose')
+const JwtController = require('./JwtController')
 const { genneralRefreshToken, genneralAccessToken } = require("./JwtController");
 
 const createUser = async (req, res, next) => {
     try {
-        const { roll_number, first_name, last_name, avatar, gender, date_of_birth, email, password, confirmPassword, phone } = req.body;
-        console.log(req.body)
+        const { roll_number, first_name,
+            last_name, avatar,
+            gender, date_of_birth,
+            email, password,
+            confirm_password, phone,
+            role, is_active
+        } = req.body;
+        console.log("req.body", req.body)
         const existingCustomer = await User.findOne({ email });
         if (existingCustomer) {
             return res.status(400).json({
-                status: 400,
-                errorType: "Payload Exists",
-                message: "Add customer failed",
-                data:
-                {
-                    field: "email",
-                    message: "Email already exists"
+                status: 'ERR',
+                message: "Email already exists"
+            });
+        }
+        if (password !== confirm_password) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'The password is equal confirmPassword'
+            })
+        }
+        const newCustomer = new User({
+            first_name,
+            last_name,
+            avatar,
+            gender,
+            date_of_birth,
+            email,
+            password,
+            phone, role, is_active
+        });
 
+        await newCustomer.save();
+
+        res.status(201).json({
+            status: "success",
+            message: "User create successfully",
+            data: {
+                customer: newCustomer
+            }
+
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+const register = async (req, res, next) => {
+    try {
+        const { email, password, confirmPassword } = req.body;
+        console.log(req.body)
+        // Kiểm tra nếu thiếu trường
+        if (!email || !password || !confirmPassword) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: 'Missing required fields',
+                data: {
+                    field: !email ? 'email' : !password ? 'password' : 'confirmPassword',
+                    message: 'This field is required'
                 }
-
+            });
+        }
+        const existingCustomer = await User.findOne({ email });
+        if (existingCustomer) {
+            return res.status(400).json({
+                status: 'ERR',
+                message: "Email already exists"
             });
         }
         if (password !== confirmPassword) {
@@ -29,15 +81,8 @@ const createUser = async (req, res, next) => {
             })
         }
         const newCustomer = new User({
-            roll_number,
-            first_name,
-            last_name,
-            avatar,
-            gender,
-            date_of_birth,
             email,
-            password,
-            phone
+            password
         });
 
         await newCustomer.save();
@@ -104,6 +149,15 @@ const login = async (req, res, next) => {
             id: user.id,
             role: user.role
         })
+
+        res.cookie("refresh_token", refresh_token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict"
+        }
+
+
+        )
         res.status(201).json({
             status: "success",
             message: "User login successfully",
@@ -133,7 +187,7 @@ const updateUser = async (req, res, next) => {
 
         // Kiểm tra xem id có hợp lệ không trước khi truy vấn
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return reject({ statusCode: 400, message: "Invalid User ID format" });
+            return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
         }
         const user = await User.findOne({
             _id: id
@@ -147,7 +201,7 @@ const updateUser = async (req, res, next) => {
         }
         const updateUser = await User.findByIdAndUpdate(id, req.body, { new: true })
 
-        res.status(200).json({
+        return res.status(200).json({
             status: 200,
             message: 'User updated success',
             data: {
@@ -238,10 +292,112 @@ const changePassword = async (req, res, next) => {
         next(error)
     }
 };
+
+const refreshToken = async (req, res) => {
+    try {
+        const refresh_token = req.cookies.refresh_token;
+        // console.log("Received refresh_token from Cookie:", refresh_token);
+
+        if (!refresh_token) {
+            return res.status(401).json({
+                status: 'ERR',
+                message: 'Refresh token is required'
+            });
+        }
+
+        const response = await JwtController.refreshTokenJwtService(refresh_token);
+
+        return res.status(200).json({
+            status: 'SUCCESS',
+            access_token: response.access_token
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: error.message
+        });
+    }
+};
+
+
+const getDetailsUser = async (req, res, next) => {
+    console.log(req.params)
+    try {
+
+        const userId = req.params.id
+        const checkUser = await User.findOne({
+            _id: userId
+        })
+        if (checkUser === null) {
+            return res.status(404).json({
+                status: 'ERR',
+                message: 'The user is not defined'
+            })
+        }
+
+        return res.status(200).json({
+            status: 'OK',
+            message: 'SUCCESS',
+            data: checkUser
+        })
+    } catch (e) {
+        next(e)
+    }
+}
+
+const logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('refresh_token')
+        return res.status(200).json({
+            status: 'OK',
+            message: 'Lou out success'
+        });
+    } catch (e) {
+        return res.status(500).json({
+            status: 'ERR',
+            message: e.message
+        });
+    }
+}
+const deleteUser = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // Kiểm tra xem id có hợp lệ không trước khi truy vấn
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
+        }
+        const user = await User.findOne({
+            _id: id
+        })
+
+        if (user === null) {
+            res.status(400).json({
+                status: 'OK',
+                message: 'The user is not defined'
+            })
+        }
+
+        // Cập nhật status thành false
+        await User.findByIdAndDelete(id);
+        res.status(204).json({
+            status: "SUCCESS",
+            message: "Deleted user success",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     createUser,
     login,
     updateUser,
     getAllUsers,
-    changePassword
+    changePassword,
+    refreshToken,
+    getDetailsUser,
+    logoutUser,
+    register,
+    deleteUser
 };
