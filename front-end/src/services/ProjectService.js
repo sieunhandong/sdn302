@@ -54,7 +54,24 @@ export const getProjectPositions = async (id) => {
     return res.data;
 };
 
-export const getProjectByUserId = async (id) => {
-    const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/project/get-project-by-user-id/${id}`);
+
+export const getProjectByUserId = async (id, token) => {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/project/get-project-by-user-id/${id}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
+    return res.data;
+};
+export const getProjectByProductId = async (id, token) => {
+    const res = await axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/project/get-project-by-project-id/${id}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
     return res.data;
 };

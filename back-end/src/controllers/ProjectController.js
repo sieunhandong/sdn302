@@ -220,44 +220,80 @@ const getProjectPositions = async (req, res, next) => {
 };
 
 const getProjectByUserId = async (req, res, next) => {
-   try {
-       const { userId } = req.params;
-       console.log('id=>', userId);
-       
-       if (!mongoose.Types.ObjectId.isValid(userId)) {
-           return res.status(400).json({
-               status: "ERR",
-               message: "Invalid userId",
-           });
-       }
+    try {
+        const { userId } = req.params;
 
-       const mentorObjectId = new mongoose.Types.ObjectId(userId);
-       const projects = await Project.find({ mentor_id: mentorObjectId })
-           .populate('mentor_id');
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Invalid userId",
+            });
+        }
 
-       if (!projects || projects.length === 0) {
-           return res.status(404).json({
-               status: "ERR",
-               message: "No projects found for this user",
-           });
-       }
+        const mentorObjectId = new mongoose.Types.ObjectId(userId);
+        const projects = await Project.find({ mentor_id: mentorObjectId })
+            .populate("mentor_id", "first_name last_name");
 
-       const formattedProjects = projects.map(project => ({
-           ...project._doc,
-           mentor_name: `${project.mentor_id.last_name} ${project.mentor_id.first_name}`,
-           project_start: new Date(project.project_start).toLocaleDateString("vi-VN"),
-           project_end: new Date(project.project_end).toLocaleDateString("vi-VN"),
-       }));
+        if (!projects || projects.length === 0) {
+            return res.status(404).json({
+                status: "ERR",
+                message: "No projects found for this user",
+            });
+        }
 
-       res.status(200).json({
-           status: "SUCCESS",
-           message: "Projects retrieved successfully",
-           data: formattedProjects,
-       });
-   } catch (error) {
-       next(error);
-   }
+        const formattedProjects = projects.map(project => ({
+            ...project._doc,
+            mentor_name: `${project.mentor_id.last_name} ${project.mentor_id.first_name}`,
+            project_start: new Date(project.project_start).toLocaleDateString("vi-VN"),
+            project_end: new Date(project.project_end).toLocaleDateString("vi-VN"),
+        }));
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Projects retrieved successfully",
+            data: formattedProjects,
+        });
+    } catch (error) {
+        next(error);
+    }
 };
+const getProjectByProjectId = async (req, res, next) => {
+    try {
+        const projectId = req.params.projectId;
+
+        // Kiểm tra projectId có hợp lệ không
+        if (!mongoose.Types.ObjectId.isValid(projectId)) {
+            return res.status(400).json({
+                status: "ERR",
+                message: "Invalid projectId",
+            });
+        }
+        const project = await Project.findById(projectId).populate("mentor_id", "first_name last_name");
+
+        if (!project) {
+            return res.status(404).json({
+                status: "ERR",
+                message: "Project not found",
+            });
+        }
+
+        const formattedProject = {
+            ...project._doc,
+            mentor_name: `${project.mentor_id.last_name} ${project.mentor_id.first_name}`,
+            project_start: new Date(project.project_start).toLocaleDateString("vi-VN"),
+            project_end: new Date(project.project_end).toLocaleDateString("vi-VN"),
+        };
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Project retrieved successfully",
+            data: formattedProject,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 module.exports = {
     createProject,
@@ -267,6 +303,7 @@ module.exports = {
     updateProject,
     deleteProject,
     getProjectPositions,
-    getProjectByUserId
+    getProjectByUserId,
+    getProjectByProjectId
 };
 

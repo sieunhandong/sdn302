@@ -1,8 +1,11 @@
 const User = require("../models/UserModel");
-const bcrypt = require('bcrypt');
-const mongoose = require('mongoose')
-const JwtController = require('./JwtController')
-const { genneralRefreshToken, genneralAccessToken } = require("./JwtController");
+const bcrypt = require("bcrypt");
+const mongoose = require("mongoose");
+const JwtController = require("./JwtController");
+const {
+  genneralRefreshToken,
+  genneralAccessToken,
+} = require("./JwtController");
 
 const createUser = async (req, res, next) => {
     try {
@@ -85,70 +88,66 @@ const register = async (req, res, next) => {
             password
         });
 
-        await newCustomer.save();
+    await newCustomer.save();
 
-        res.status(201).json({
-            status: "success",
-            message: "User create successfully",
-            data: {
-                customer: newCustomer
-            }
-
-        });
-    } catch (error) {
-        next(error);
-    }
+    res.status(201).json({
+      status: "success",
+      message: "User create successfully",
+      data: {
+        customer: newCustomer,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 const login = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({
-                status: 400,
-                message: "Email or Password is required",
-            });
-        }
-        console.log(req.body)
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({
-                status: 400,
-                message: "Login failded",
-                data:
-                {
-                    field: "email",
-                    message: "Email is not defined"
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        status: 400,
+        message: "Email or Password is required",
+      });
+    }
+    console.log(req.body);
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        status: 400,
+        message: "Login failded",
+        data: {
+          field: "email",
+          message: "Email is not defined",
+        },
+      });
+    }
 
-                }
+    if (user.status) {
+      return res.status(400).json({
+        status: 400,
+        message: "The User not ative",
+      });
+    }
+    const comparePassword = bcrypt.compareSync(password, user.password);
+    if (!comparePassword) {
+      return res.status(400).json({
+        status: 400,
+        message: "The Password is incorrect",
+      });
+    }
+    user.last_login = new Date();
+    await user.save();
 
-            });
-        }
+    const access_token = genneralAccessToken({
+      id: user.id,
+      role: user.role,
+    });
 
-        if (user.status) {
-            return res.status(400).json({
-                status: 400,
-                message: "The User not ative"
-            })
-        }
-        const comparePassword = bcrypt.compareSync(password, user.password)
-        if (!comparePassword) {
-            return res.status(400).json({
-                status: 400,
-                message: 'The Password is incorrect'
-            })
-        }
-        user.last_login = new Date();
-        await user.save()
-
-        const access_token = genneralAccessToken({
-            id: user.id,
-            role: user.role
-        })
-
-        const refresh_token = genneralRefreshToken({
-            id: user.id,
-            role: user.role
-        })
+    const refresh_token = genneralRefreshToken({
+      id: user.id,
+      role: user.role,
+    });
 
         res.cookie("refresh_token", refresh_token, {
             httpOnly: true,
@@ -175,31 +174,30 @@ const login = async (req, res, next) => {
     }
 };
 const updateUser = async (req, res, next) => {
-    try {
-        const id = req.params.id;
-        const {
-            first_name,
-            last_name,
-            avatar,
-            gender,
-            date_of_birth,
-            phone } = req.body;
+  try {
+    const id = req.params.id;
+    const { first_name, last_name, avatar, gender, date_of_birth, phone } =
+      req.body;
 
-        // Kiểm tra xem id có hợp lệ không trước khi truy vấn
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
-        }
-        const user = await User.findOne({
-            _id: id
-        })
+    // Kiểm tra xem id có hợp lệ không trước khi truy vấn
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ status: "ERR", message: "Invalid User ID format" });
+    }
+    const user = await User.findOne({
+      _id: id,
+    });
 
-        if (user === null) {
-            res.status(400).json({
-                status: 'OK',
-                message: 'The user is not defined'
-            })
-        }
-        const updateUser = await User.findByIdAndUpdate(id, req.body, { new: true })
+    if (user === null) {
+      res.status(400).json({
+        status: "OK",
+        message: "The user is not defined",
+      });
+    }
+    const updateUser = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
 
         return res.status(200).json({
             status: 200,
@@ -219,78 +217,88 @@ const updateUser = async (req, res, next) => {
     }
 }
 const getAllUsers = async (req, res, next) => {
-    try {
-        const users = await User.find({}, { password: 0 }); // Không trả về mật khẩu
-        res.status(200).json({
-            status: 'OK',
-            message: 'Get all users successfully',
-            data: users
-        });
-    } catch (e) {
-        next(e);
-    }
-}
+  try {
+    const users = await User.find({}, { password: 0 }); // Không trả về mật khẩu
+    res.status(200).json({
+      status: "OK",
+      message: "Get all users successfully",
+      data: users,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 const changePassword = async (req, res, next) => {
-    try {
-        const { email, oldPassword, newPassword, confirmPassword } = req.body
-        console.log("Received data:", { email, oldPassword, newPassword, confirmPassword });
+  try {
+    const { email, oldPassword, newPassword, confirmPassword } = req.body;
+    console.log("Received data:", {
+      email,
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    });
 
-        // Kiểm tra thông tin đầu vào
-        if (!email || !oldPassword || !newPassword || !confirmPassword) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "Please provide all required fields"
-            });
-        }
-        // Tìm kiếm user trong DB
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "User not found"
-            });
-        }
-
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "New password and confirm password do not match"
-            });
-        }
-
-        // Kiểm tra mật khẩu cũ
-        const isOldPasswordValid = await bcrypt.compareSync(oldPassword, user.password);
-        if (!isOldPasswordValid) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "Old password is incorrect"
-            });
-        }
-
-        // Kiểm tra nếu mật khẩu mới trùng mật khẩu cũ
-        const isNewPasswordSameAsOld = await bcrypt.compare(newPassword, user.password);
-        if (isNewPasswordSameAsOld) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "New password must be different from the old password"
-            });
-        }
-
-        // Mã hóa mật khẩu mới
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashedNewPassword;
-
-        // Lưu vào DB
-        await user.save();
-
-        return res.status(200).json({
-            status: 'OK',
-            message: "Password updated successfully"
-        });
-
-    } catch (error) {
-        next(error)
+    // Kiểm tra thông tin đầu vào
+    if (!email || !oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Please provide all required fields",
+      });
     }
+    // Tìm kiếm user trong DB
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "User not found",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "New password and confirm password do not match",
+      });
+    }
+
+    // Kiểm tra mật khẩu cũ
+    const isOldPasswordValid = await bcrypt.compareSync(
+      oldPassword,
+      user.password
+    );
+    if (!isOldPasswordValid) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Old password is incorrect",
+      });
+    }
+
+    // Kiểm tra nếu mật khẩu mới trùng mật khẩu cũ
+    const isNewPasswordSameAsOld = await bcrypt.compare(
+      newPassword,
+      user.password
+    );
+    if (isNewPasswordSameAsOld) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "New password must be different from the old password",
+      });
+    }
+
+    // Mã hóa mật khẩu mới
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedNewPassword;
+
+    // Lưu vào DB
+    await user.save();
+
+    return res.status(200).json({
+      status: "OK",
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const refreshToken = async (req, res) => {
@@ -298,53 +306,51 @@ const refreshToken = async (req, res) => {
         const refresh_token = req.cookies.refresh_token;
         // console.log("Received refresh_token from Cookie:", refresh_token);
 
-        if (!refresh_token) {
-            return res.status(401).json({
-                status: 'ERR',
-                message: 'Refresh token is required'
-            });
-        }
+    if (!refresh_token) {
+      return res.status(401).json({
+        status: "ERR",
+        message: "Refresh token is required",
+      });
+    }
 
         const response = await JwtController.refreshTokenJwtService(refresh_token);
 
-        return res.status(200).json({
-            status: 'SUCCESS',
-            access_token: response.access_token
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            status: 'ERR',
-            message: error.message
-        });
-    }
+    return res.status(200).json({
+      status: "SUCCESS",
+      access_token: response.access_token,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "ERR",
+      message: error.message,
+    });
+  }
 };
 
 
 const getDetailsUser = async (req, res, next) => {
-    console.log(req.params)
-    try {
-
-        const userId = req.params.id
-        const checkUser = await User.findOne({
-            _id: userId
-        })
-        if (checkUser === null) {
-            return res.status(404).json({
-                status: 'ERR',
-                message: 'The user is not defined'
-            })
-        }
-
-        return res.status(200).json({
-            status: 'OK',
-            message: 'SUCCESS',
-            data: checkUser
-        })
-    } catch (e) {
-        next(e)
+  console.log(req.params);
+  try {
+    const userId = req.params.id;
+    const checkUser = await User.findOne({
+      _id: userId,
+    });
+    if (checkUser === null) {
+      return res.status(404).json({
+        status: "ERR",
+        message: "The user is not defined",
+      });
     }
-}
+
+    return res.status(200).json({
+      status: "OK",
+      message: "SUCCESS",
+      data: checkUser,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 
 const logoutUser = async (req, res) => {
     try {
@@ -388,7 +394,18 @@ const deleteUser = async (req, res, next) => {
         next(error);
     }
 };
-
+const getAllMentor = async (req, res, next) => {
+  try {
+    const mentors = await User.find({ role: "MENTOR" }, { password: 0 }); // Không trả về mật khẩu
+    res.status(200).json({
+      status: "OK",
+      message: "Get all mentors successfully",
+      data: mentors,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 module.exports = {
     createUser,
     login,
@@ -399,5 +416,6 @@ module.exports = {
     getDetailsUser,
     logoutUser,
     register,
-    deleteUser
+    deleteUser,
+    getAllMentor
 };
