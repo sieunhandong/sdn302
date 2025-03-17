@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const positionSchema = new mongoose.Schema(
     {
-        position_name: { type: String, required: [true, 'Project name is require'] },
+        position_name: { type: String, required: [true, 'Position name is require'] },
         project_id: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true },
         position_count: { type: Number, required: false },
         project_details: { type: String, required: false },

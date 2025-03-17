@@ -43,3 +43,13 @@ export const acceptCandidate = async (projectId, candidateId) => {
         throw error;
     }
 };
+
+export const rejectCandidate = async (projectId, candidateId) => {
+    try {
+        const res = await axios.put(`${process.env.REACT_APP_API_URL_BACKEND}/candidate/reject-candidate/projects/${projectId}/candidates/${candidateId}`);
+        return res.data;
+    } catch (error) {
+        console.error("Error fetching mentor details:", error);
+        throw error;
+    }
+};

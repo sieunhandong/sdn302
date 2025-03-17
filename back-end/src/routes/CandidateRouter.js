@@ -6,7 +6,9 @@ const { authAdminMiddleware, authMentorMiddleware } = require('../middleware/aut
 // danh sách candidate ứng tuyển của mentor
 router.get("/get-candidate-info/:mentor_id", authMentorMiddleware, candidateController.getCandidatesByMentor);
 // cập nhật candidate lên intern
-router.put("/accept-candidate/projects/:projectId/candidates/:candidateId", authMentorMiddleware, candidateController.acceptCandidate);
+router.put("/accept-candidate/projects/:projectId/candidates/:candidateId", candidateController.acceptCandidate);
+// xóa candidate khoi project
+router.put("/reject-candidate/projects/:projectId/candidates/:candidateId", candidateController.rejectCandidate);
 // danh sách candidate ứng tuyển của 1 project
 router.get("/get-candidate-by-project/:project_id", authMentorMiddleware, candidateController.getCandidatesByProjectId);
 router.post("/candidate-apply", candidateController.apply);

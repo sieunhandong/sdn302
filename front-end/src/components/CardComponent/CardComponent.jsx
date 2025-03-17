@@ -1,9 +1,11 @@
 import React from 'react'
 import { StyleNameProduct, WrapperCardStyle, WrapperDiscountText, WrapperImageStyle, WrapperPriceText, WrapperReportText, WrapperStyleTextSell } from './style'
+import { useSelector } from "react-redux";
 import { StarFilled } from '@ant-design/icons'
 import logo from '../../assets/images/logo1.png'
 
 const CardComponent = ({ name, mentor, image, description, start, end, onClick }) => {
+    const role = useSelector((state) => state.user?.role);
     return (
         <WrapperCardStyle
             hoverable
@@ -16,8 +18,11 @@ const CardComponent = ({ name, mentor, image, description, start, end, onClick }
             cover={<img alt="Project" src={image || "https://via.placeholder.com/200"} />}
         >
             <StyleNameProduct>{name}</StyleNameProduct>
-            <WrapperReportText>Mentor: {mentor || "Chưa có thông tin"}</WrapperReportText>
-            <WrapperReportText>Thời gian bat dau: {start}</WrapperReportText>
+            {role !== "MENTOR" && (
+            <WrapperReportText>Mentor: {mentor || "No information yet"}</WrapperReportText>
+            )}
+            <WrapperReportText>Start Date: {start}</WrapperReportText>
+            <WrapperReportText>End Date: {end}</WrapperReportText>
         </WrapperCardStyle>
 
     )

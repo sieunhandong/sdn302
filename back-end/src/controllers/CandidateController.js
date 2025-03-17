@@ -49,47 +49,47 @@ const getCandidatesByMentor = async (req, res, next) => {
 };
 
 //danh sách candidate ứng tuyển của 1 project
-const getCandidatesByProjectId = async (req, res, next) => {
+const getCandidatesByProjectId = async (req, res, next) => { 
     try {
         const { project_id } = req.params;
-        console.log("project_id", project_id)
-        // Tìm các vị trí thuộc dự án
-        const positions = await Position.find({ project_id }).lean();
-        if (!positions.length) return res.status(404).json({ status: "ERR", message: "No positions found for this project" });
+        console.log("project_id", project_id);
 
-        const positionIds = positions.map(p => p._id);
+        // Kiểm tra dự án có tồn tại không
+        const project = await Project.findById(project_id);
+        if (!project) return res.status(404).json({ status: "ERR", message: "Project not found" });
 
-        // Tìm các ứng viên đã apply vào các vị trí trong project
-        const applications = await Application.find({ project_id: project_id });
-        if (!applications.length) return res.status(404).json({ status: "ERR", message: "No candidates applied for this project" });
-
-        const candidateIds = applications.map(a => a.applicant_id);
-
-        // Lấy thông tin ứng viên từ bảng User
-        const candidates = await User.find({ _id: { $in: candidateIds } })
-            .select("roll_number first_name last_name avatar date_of_birth gender phone specialization is_active")
+        // Lấy danh sách ứng viên ứng tuyển vào project
+        const applications = await Application.find({ project_id })
+            .populate({
+                path: 'applicant_id',
+                select: 'roll_number first_name last_name avatar date_of_birth gender phone specialization is_active',
+            })
+            .populate({
+                path: 'position_id',
+                select: 'position_name',
+            })
             .lean();
 
-        // Tạo danh sách ứng viên với thông tin đầy đủ
-        const candidateData = candidates.map(c => {
-            const app = applications.find(a => a.applicant_id.equals(c._id));
-            const position = positions.find(p => p._id.equals(app?.position_id));
+        if (!applications.length) {
+            return res.status(404).json({ status: "ERR", message: "No candidates applied for this project" });
+        }
 
-            return {
-                roll_number: c.roll_number,
-                full_name: `${c.first_name} ${c.last_name}`,
-                avatar: c.avatar || "default_avatar.png",
-                specialization: c.specialization || "N/A",
-                position_name: position?.position_id || "Unknown",
-                date_of_birth: c.date_of_birth,
-                gender: c.gender,
-                phone: c.phone,
-                status: c.is_active ? "Active" : "Inactive"
-            };
-        });
+        // Tạo danh sách ứng viên với thông tin đầy đủ
+        const candidateData = applications.map(app => ({
+            roll_number: app.applicant_id?.roll_number || "N/A",
+            full_name: `${app.applicant_id?.first_name || ''} ${app.applicant_id?.last_name || ''}`.trim() || "Unknown",
+            avatar: app.applicant_id?.avatar || "default_avatar.png",
+            specialization: app.applicant_id?.specialization || "N/A",
+            position_name: app.position_id?.position_name || "Unknown",
+            date_of_birth: app.applicant_id?.date_of_birth || "N/A",
+            gender: app.applicant_id?.gender || "N/A",
+            phone: app.applicant_id?.phone || "N/A",
+            status: app.applicant_id?.is_active ? "Active" : "Inactive"
+        }));
 
         res.status(200).json({ status: "SUCCESS", message: "Candidates retrieved successfully", data: candidateData });
     } catch (error) {
+        console.error("Error fetching candidates:", error);
         next(error);
     }
 };
@@ -144,6 +144,42 @@ const acceptCandidate = async (req, res, next) => {
         next(error);
     }
 };
+
+//xóa candidate khỏi application của 1 project
+const rejectCandidate = async (req, res, next) => { 
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { projectId, candidateId } = req.params;
+
+        // Tìm application của candidate trong đúng projectId
+        const application = await Application.findOne({ 
+            applicant_id: candidateId, 
+            project_id: projectId 
+        })
+        .populate("position_id")
+        .session(session);
+
+        if (!application) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).json({ status: "ERR", message: "Candidate has not applied for this project" });
+        }
+
+        // Xóa application chỉ trong project cụ thể
+        await Application.deleteOne({ 
+            applicant_id: candidateId, 
+            project_id: projectId 
+        }).session(session);
+
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        next(error);
+    }
+};
+
 const apply = async (req, res, next) => {
     try {
         const { applicant_id, mentor_id, project_id, position_id } = req.body;
@@ -198,5 +234,6 @@ module.exports = {
     getCandidatesByMentor,
     getCandidatesByProjectId,
     acceptCandidate,
+    rejectCandidate,
     apply
 };
