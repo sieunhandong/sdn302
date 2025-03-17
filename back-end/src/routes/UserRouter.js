@@ -23,7 +23,6 @@ router.post("/sign-up", userController.register);
 router.get(
   "/get-all-mentor",
   authHRMiddleware,
-  authMentorMiddleware,
   userController.getAllMentor
 );
 

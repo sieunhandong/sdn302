@@ -12,8 +12,9 @@ const InterViewSchedule = () => {
 
   const token = useSelector((state) => state.user?.access_token || "");
   const role = useSelector((state) => state.user?.role || "");
-  const id = useSelector((state) => state.user?._id || "");
-  console.log("role", role);
+  const id = useSelector((state) => state.user?.id || "");
+
+  console.log("role", id);
 
   // Fetch schedules từ API
   useEffect(() => {

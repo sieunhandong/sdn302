@@ -203,9 +203,8 @@ const getScheduleByMentorId = async (req, res, next) => {
 
     res.status(200).json({
       status: "SUCCESS",
-      data: {
-        schedules,
-      },
+      data:
+        schedules
     });
   } catch (error) {
     next(error);

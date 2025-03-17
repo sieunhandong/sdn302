@@ -54,7 +54,9 @@ export const deleteSchedule = async (id, token) => {
   return res.data;
 };
 
-export const getScheduleByMentorId = async (id, token) => {
+export const getScheduleByMentorId = async (token, id) => {
+  console.log("id-all", id);
+  console.log("token-all", token);
   const res = await axiosJWT.get(
     `${process.env.REACT_APP_API_URL_BACKEND}/schedule/view-schedule/${id}`,
     {

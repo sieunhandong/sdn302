@@ -394,7 +394,18 @@ const deleteUser = async (req, res, next) => {
         next(error);
     }
 };
-
+const getAllMentor = async (req, res, next) => {
+  try {
+    const mentors = await User.find({ role: "MENTOR" }, { password: 0 }); // Không trả về mật khẩu
+    res.status(200).json({
+      status: "OK",
+      message: "Get all mentors successfully",
+      data: mentors,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 module.exports = {
     createUser,
     login,
@@ -405,5 +416,6 @@ module.exports = {
     getDetailsUser,
     logoutUser,
     register,
-    deleteUser
+    deleteUser,
+    getAllMentor
 };
