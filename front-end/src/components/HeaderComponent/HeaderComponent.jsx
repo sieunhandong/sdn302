@@ -12,20 +12,19 @@ import Loading from '../LoadingComponent/Loading';
 import MenuComponent from '../MenuComponent/MenuComponent';
 
 function HeaderComponent() {
-
-  const user = useSelector((state) => state.user)
-  console.log('user', user)
+  const user = useSelector((state) => state.user);
+  console.log("user", user);
   const dispatch = useDispatch();
   const [loading, setloading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // State mở menu
   const navigate = useNavigate();
 
   const handleNavigateLogin = () => {
-    navigate('/sign-in')
-  }
+    navigate("/sign-in");
+  };
 
   const handleLogout = async () => {
-    setloading(true)
+    setloading(true);
     // Xóa token khỏi frontend
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -50,14 +49,25 @@ function HeaderComponent() {
         </WrapperLink>
       </WrapperContentPopup>
     </div>
-  )
+  );
 
   return (
-    <div style={{ width: '100%', background: 'rgb(26,148,255)', display: 'flex', justifyContent: 'center' }}>
+    <div
+      style={{
+        width: "100%",
+        background: "rgb(26,148,255)",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
       <WrapperHeader>
         <Col span={5}>
           {/* Nút mở menu */}
-          <Button type="text" icon={<MenuOutlined />} onClick={() => setIsMenuOpen(true)} />
+          <Button
+            type="text"
+            icon={<MenuOutlined />}
+            onClick={() => setIsMenuOpen(true)}
+          />
           <WrapperTextHeader>IM</WrapperTextHeader>
         </Col>
         {/* <Col span={13} style={{ display: 'flex', justifyContent: 'center' }}>
@@ -68,60 +78,104 @@ function HeaderComponent() {
           // onSearch={onSearch}
           />
         </Col> */}
-        <Col span={13} style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center' }}>
-          <Link to="/project" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+        <Col
+          span={13}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+            alignItems: "center",
+          }}
+        >
+          <Link
+            to="/project"
+            style={{ color: "white", fontSize: "16px", textDecoration: "none" }}
+          >
             Recruitment
           </Link>
 
-          {(user?.role === 'ADMIN' || user?.role === 'HR' || user?.role === 'CANDIDATE') && (
-            <Link to="/" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+          {(user?.role === "ADMIN" ||
+            user?.role === "HR" ||
+            user?.role === "CANDIDATE") && (
+            <Link
+              to="/"
+              style={{
+                color: "white",
+                fontSize: "16px",
+                textDecoration: "none",
+              }}
+            >
               Notification
             </Link>
           )}
           {/* Role Intern & Mentor được xem Notification */}
-          {(user?.role === 'INTERN' || user?.role === 'MENTOR') && (
-            <Link to="/notification" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+          {(user?.role === "INTERN" || user?.role === "MENTOR") && (
+            <Link
+              to="/notification"
+              style={{
+                color: "white",
+                fontSize: "16px",
+                textDecoration: "none",
+              }}
+            >
               Notification
             </Link>
           )}
 
           {/* Role Intern & Mentor được xem Interview Schedule */}
-          {(user?.role === 'Intern' || user?.role === 'Mentor') && (
-            <Link to="/interview-schedule" style={{ color: 'white', fontSize: '16px', textDecoration: 'none' }}>
+          {(user?.role === "INTERN" || user?.role === "MENTOR") && (
+            <Link
+              to="/interview-schedule"
+              style={{
+                color: "white",
+                fontSize: "16px",
+                textDecoration: "none",
+              }}
+            >
               Interview Schedule
             </Link>
           )}
         </Col>
 
-
-        <Col span={6} style={{ display: "flex", gap: "20px", alignItems: 'center' }}>
+        <Col
+          span={6}
+          style={{ display: "flex", gap: "20px", alignItems: "center" }}
+        >
           <Loading isLoading={loading}>
             <WrapperHeaderAccount>
               <div>
-                <UserOutlined style={{ fontSize: '30px' }} />
+                <UserOutlined style={{ fontSize: "30px" }} />
               </div>
               {user?.first_name ? (
                 <>
-                  <Popover content={content} trigger="click" >
-                    <div style={{ cursor: 'pointer' }}>{user.first_name}</div>
+                  <Popover content={content} trigger="click">
+                    <div style={{ cursor: "pointer" }}>{user.first_name}</div>
                   </Popover>
                 </>
               ) : (
-                <div onClick={handleNavigateLogin} style={{ cursor: 'pointer' }}>
-                  <WrapperTextHeaderSmall>Sign-in/Sign-up</WrapperTextHeaderSmall>
+                <div
+                  onClick={handleNavigateLogin}
+                  style={{ cursor: "pointer" }}
+                >
+                  <WrapperTextHeaderSmall>
+                    Sign-in/Sign-up
+                  </WrapperTextHeaderSmall>
                   <div>
                     <WrapperTextHeaderSmall>Account</WrapperTextHeaderSmall>
                     <CaretDownOutlined />
                   </div>
                 </div>
               )}
-
             </WrapperHeaderAccount>
           </Loading>
         </Col>
       </WrapperHeader>
       {/* Drawer Menu */}
-      <MenuComponent isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} role={user?.role} />
+      <MenuComponent
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        role={user?.role}
+      />
     </div>
   );
 }
