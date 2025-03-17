@@ -15,6 +15,7 @@ import MyProject from "../pages/MyProject/MyProject";
 
 import InterviewSchedulePage from "../pages/InterviewSchedulePage/InterviewSchedulePage";
 import InterViewSchedule from "../pages/InterviewSchedule/InterviewSchedule";
+import DetailsProjectPage from "../pages/DetailsProjectPage/DetailsProjectPage";
 export const routes = [
   {
     path: "/",
@@ -39,6 +40,11 @@ export const routes = [
   {
     path: "/project/:id",
     page: ProjectDetailsPage,
+    isShowHeader: true
+  },
+  {
+    path: "/project-details/:id",
+    page: DetailsProjectPage,
     isShowHeader: true
   },
   {
@@ -96,5 +102,5 @@ export const routes = [
     page: ReportPage,
     isShowHeader: true
 
-}
+  }
 ];

@@ -50,7 +50,7 @@ function ProjectPage() {
                                 description={project.project_details}
                                 start={project.project_start}
                                 end={project.project_end}
-                                onClick={() => navigate(`/project/${project._id}`)}
+                                onClick={() => navigate(`/project-details/${project._id}`)}
                             />
 
                         ))}
