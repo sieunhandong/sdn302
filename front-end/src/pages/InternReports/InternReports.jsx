@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getAllReports } from "../../services/ReportService";
 import { getDetailsUser } from "../../services/UserService";
 import styles from "./style"; 
@@ -6,6 +7,7 @@ import styles from "./style";
 const InternReports = () => {
     const [reports, setReports] = useState([]);
     const [selectedProject, setSelectedProject] = useState("All Projects");
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         async function fetchReports() {
@@ -39,6 +41,11 @@ const InternReports = () => {
     const filteredReports = selectedProject === "All Projects"
         ? reports
         : reports.filter(report => report.project_id?.project_name === selectedProject);
+
+    // Hàm điều hướng đến trang đánh giá
+    const handleEvaluate = (internId, type) => {
+        navigate(`/evaluation?intern_id=${internId}&type=${type}`);
+    };
 
     return (
         <div style={styles.container}>
@@ -81,8 +88,18 @@ const InternReports = () => {
                                 </a>
                             </td>
                             <td style={styles.td}>
-                                <button style={{ ...styles.btn, ...styles.btnSuccess }}>Midterm</button>
-                                <button style={{ ...styles.btn, ...styles.btnDanger }}>Final</button>
+                                <button 
+                                    style={{ ...styles.btn, ...styles.btnSuccess }} 
+                                    onClick={() => handleEvaluate(report.intern_id?._id, "MIDTERM")}
+                                >
+                                    Midterm
+                                </button>
+                                <button 
+                                    style={{ ...styles.btn, ...styles.btnDanger }} 
+                                    onClick={() => handleEvaluate(report.intern_id?._id, "FINAL")}
+                                >
+                                    Final
+                                </button>
                             </td>
                         </tr>
                     ))}
