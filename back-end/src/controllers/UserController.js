@@ -8,85 +8,85 @@ const {
 } = require("./JwtController");
 
 const createUser = async (req, res, next) => {
-    try {
-        const { roll_number, first_name,
-            last_name, avatar,
-            gender, date_of_birth,
-            email, password,
-            confirm_password, phone,
-            role, is_active
-        } = req.body;
-        console.log("req.body", req.body)
-        const existingCustomer = await User.findOne({ email });
-        if (existingCustomer) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "Email already exists"
-            });
-        }
-        if (password !== confirm_password) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The password is equal confirmPassword'
-            })
-        }
-        const newCustomer = new User({
-            first_name,
-            last_name,
-            avatar,
-            gender,
-            date_of_birth,
-            email,
-            password,
-            phone, role, is_active
-        });
-
-        await newCustomer.save();
-
-        res.status(201).json({
-            status: "success",
-            message: "User create successfully",
-            data: {
-                customer: newCustomer
-            }
-
-        });
-    } catch (error) {
-        next(error);
+  try {
+    const { roll_number, first_name,
+      last_name, avatar,
+      gender, date_of_birth,
+      email, password,
+      confirm_password, phone,
+      role, is_active
+    } = req.body;
+    console.log("req.body", req.body)
+    const existingCustomer = await User.findOne({ email });
+    if (existingCustomer) {
+      return res.status(400).json({
+        status: 'ERR',
+        message: "Email already exists"
+      });
     }
+    if (password !== confirm_password) {
+      return res.status(200).json({
+        status: 'ERR',
+        message: 'The password is equal confirmPassword'
+      })
+    }
+    const newCustomer = new User({
+      first_name,
+      last_name,
+      avatar,
+      gender,
+      date_of_birth,
+      email,
+      password,
+      phone, role, is_active
+    });
+
+    await newCustomer.save();
+
+    res.status(201).json({
+      status: "success",
+      message: "User create successfully",
+      data: {
+        customer: newCustomer
+      }
+
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 const register = async (req, res, next) => {
-    try {
-        const { email, password, confirmPassword } = req.body;
-        console.log(req.body)
-        // Kiểm tra nếu thiếu trường
-        if (!email || !password || !confirmPassword) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: 'Missing required fields',
-                data: {
-                    field: !email ? 'email' : !password ? 'password' : 'confirmPassword',
-                    message: 'This field is required'
-                }
-            });
+  try {
+    const { email, password, confirmPassword } = req.body;
+    console.log(req.body)
+    // Kiểm tra nếu thiếu trường
+    if (!email || !password || !confirmPassword) {
+      return res.status(400).json({
+        status: 'ERR',
+        message: 'Missing required fields',
+        data: {
+          field: !email ? 'email' : !password ? 'password' : 'confirmPassword',
+          message: 'This field is required'
         }
-        const existingCustomer = await User.findOne({ email });
-        if (existingCustomer) {
-            return res.status(400).json({
-                status: 'ERR',
-                message: "Email already exists"
-            });
-        }
-        if (password !== confirmPassword) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The password is equal confirmPassword'
-            })
-        }
-        const newCustomer = new User({
-            email,
-            password
-        });
+      });
+    }
+    const existingCustomer = await User.findOne({ email });
+    if (existingCustomer) {
+      return res.status(400).json({
+        status: 'ERR',
+        message: "Email already exists"
+      });
+    }
+    if (password !== confirmPassword) {
+      return res.status(200).json({
+        status: 'ERR',
+        message: 'The password is equal confirmPassword'
+      })
+    }
+    const newCustomer = new User({
+      email,
+      password
+    });
 
     await newCustomer.save();
 
@@ -149,29 +149,29 @@ const login = async (req, res, next) => {
       role: user.role,
     });
 
-        res.cookie("refresh_token", refresh_token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "strict"
-        }
-
-
-        )
-        res.status(201).json({
-            status: "success",
-            message: "User login successfully",
-            data: {
-                id: user.id,
-                role: user.role,
-                access_token,
-                refresh_token,
-                last_login: user.last_login
-            }
-
-        });
-    } catch (error) {
-        next(error);
+    res.cookie("refresh_token", refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict"
     }
+
+
+    )
+    res.status(201).json({
+      status: "success",
+      message: "User login successfully",
+      data: {
+        id: user.id,
+        role: user.role,
+        access_token,
+        refresh_token,
+        last_login: user.last_login
+      }
+
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 const updateUser = async (req, res, next) => {
   try {
@@ -199,22 +199,22 @@ const updateUser = async (req, res, next) => {
       new: true,
     });
 
-        return res.status(200).json({
-            status: 200,
-            message: 'User updated success',
-            data: {
-                _id: updateUser._id,
-                first_name: updateUser.first_name,
-                last_name: updateUser.last_name,
-                avatar: updateUser.avatar,
-                gender: updateUser.gender,
-                date_of_birth: updateUser.date_of_birth,
-                phone: updateUser.phone,
-            }
-        })
-    } catch (e) {
-        next(e)
-    }
+    return res.status(200).json({
+      status: 200,
+      message: 'User updated success',
+      data: {
+        _id: updateUser._id,
+        first_name: updateUser.first_name,
+        last_name: updateUser.last_name,
+        avatar: updateUser.avatar,
+        gender: updateUser.gender,
+        date_of_birth: updateUser.date_of_birth,
+        phone: updateUser.phone,
+      }
+    })
+  } catch (e) {
+    next(e)
+  }
 }
 const getAllUsers = async (req, res, next) => {
   try {
@@ -302,9 +302,9 @@ const changePassword = async (req, res, next) => {
 };
 
 const refreshToken = async (req, res) => {
-    try {
-        const refresh_token = req.cookies.refresh_token;
-        // console.log("Received refresh_token from Cookie:", refresh_token);
+  try {
+    const refresh_token = req.cookies.refresh_token;
+    // console.log("Received refresh_token from Cookie:", refresh_token);
 
     if (!refresh_token) {
       return res.status(401).json({
@@ -313,7 +313,7 @@ const refreshToken = async (req, res) => {
       });
     }
 
-        const response = await JwtController.refreshTokenJwtService(refresh_token);
+    const response = await JwtController.refreshTokenJwtService(refresh_token);
 
     return res.status(200).json({
       status: "SUCCESS",
@@ -353,46 +353,58 @@ const getDetailsUser = async (req, res, next) => {
 };
 
 const logoutUser = async (req, res) => {
-    try {
-        res.clearCookie('refresh_token')
-        return res.status(200).json({
-            status: 'OK',
-            message: 'Lou out success'
-        });
-    } catch (e) {
-        return res.status(500).json({
-            status: 'ERR',
-            message: e.message
-        });
-    }
+  try {
+    res.clearCookie('refresh_token')
+    return res.status(200).json({
+      status: 'OK',
+      message: 'Lou out success'
+    });
+  } catch (e) {
+    return res.status(500).json({
+      status: 'ERR',
+      message: e.message
+    });
+  }
 }
 const deleteUser = async (req, res, next) => {
-    try {
-        const id = req.params.id;
-        // Kiểm tra xem id có hợp lệ không trước khi truy vấn
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
-        }
-        const user = await User.findOne({
-            _id: id
-        })
-
-        if (user === null) {
-            res.status(400).json({
-                status: 'OK',
-                message: 'The user is not defined'
-            })
-        }
-
-        // Cập nhật status thành false
-        await User.findByIdAndDelete(id);
-        res.status(204).json({
-            status: "SUCCESS",
-            message: "Deleted user success",
-        });
-    } catch (error) {
-        next(error);
+  try {
+    const id = req.params.id;
+    // Kiểm tra xem id có hợp lệ không trước khi truy vấn
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ status: 'ERR', message: "Invalid User ID format" });
     }
+    const user = await User.findOne({
+      _id: id
+    })
+
+    if (user === null) {
+      res.status(400).json({
+        status: 'OK',
+        message: 'The user is not defined'
+      })
+    }
+
+    // Cập nhật status thành false
+    await User.findByIdAndDelete(id);
+    res.status(204).json({
+      status: "SUCCESS",
+      message: "Deleted user success",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+const getAllHR = async (req, res, next) => {
+  try {
+    const mentors = await User.find({ role: "HR" }, { password: 0 }); // Không trả về mật khẩu
+    res.status(200).json({
+      status: "OK",
+      message: "Get all mentors successfully",
+      data: mentors,
+    });
+  } catch (e) {
+    next(e);
+  }
 };
 const getAllMentor = async (req, res, next) => {
   try {
@@ -407,15 +419,16 @@ const getAllMentor = async (req, res, next) => {
   }
 };
 module.exports = {
-    createUser,
-    login,
-    updateUser,
-    getAllUsers,
-    changePassword,
-    refreshToken,
-    getDetailsUser,
-    logoutUser,
-    register,
-    deleteUser,
-    getAllMentor
+  createUser,
+  login,
+  updateUser,
+  getAllUsers,
+  changePassword,
+  refreshToken,
+  getDetailsUser,
+  logoutUser,
+  register,
+  deleteUser,
+  getAllMentor,
+  getAllHR
 };

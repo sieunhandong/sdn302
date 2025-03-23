@@ -25,5 +25,10 @@ router.get(
   authHRMiddleware,
   userController.getAllMentor
 );
+router.get(
+  "/get-all-hr",
+  authMentorMiddleware,
+  userController.getAllHR
+);
 
 module.exports = router;
