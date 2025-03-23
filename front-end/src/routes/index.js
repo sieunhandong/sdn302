@@ -12,6 +12,7 @@ import ApplyProjectPosition from "../pages/ApplyProjectPosition/ApplyProjectPosi
 import UserInformation from "../pages/UserInformation/UserInformation";
 import InternOfProject from "../pages/InternOfProject/InternOfProject";
 import MyProject from "../pages/MyProject/MyProject";
+import EvaluationIntern from "../pages/EvaluationIntern/EvaluationIntern";
 
 import InterviewSchedulePage from "../pages/InterviewSchedulePage/InterviewSchedulePage";
 import InterViewSchedule from "../pages/InterviewSchedule/InterviewSchedule";
@@ -107,5 +108,11 @@ export const routes = [
     page: ReportPage,
     isShowHeader: true
 
-  }
+  },
+  {
+    path: "/evaluation",
+    page: EvaluationIntern,
+    isShowHeader: true
+},
 ];
+
