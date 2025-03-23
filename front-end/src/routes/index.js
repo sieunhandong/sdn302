@@ -16,6 +16,7 @@ import MyProject from "../pages/MyProject/MyProject";
 import InterviewSchedulePage from "../pages/InterviewSchedulePage/InterviewSchedulePage";
 import InterViewSchedule from "../pages/InterviewSchedule/InterviewSchedule";
 import DetailsProjectPage from "../pages/DetailsProjectPage/DetailsProjectPage";
+import RecruitmentManagement from "../pages/RecruitmentManage/RecruitmentManage";
 export const routes = [
   {
     path: "/",
@@ -105,6 +106,12 @@ export const routes = [
   {
     path: "/report",
     page: ReportPage,
+    isShowHeader: true
+
+  },
+  {
+    path: "/recruitment-management-mentor",
+    page: RecruitmentManagement,
     isShowHeader: true
 
   }

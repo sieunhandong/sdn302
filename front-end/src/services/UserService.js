@@ -70,6 +70,20 @@ export const getAllMentor = async (token) => {
   );
   return res.data;
 };
+
+export const getAllHr = async (token) => {
+  const res = await axios.get(
+    `${process.env.REACT_APP_API_URL_BACKEND}/user/get-all-hr`,
+
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};
 export const getAllUsers = async (token) => {
   return axios.get(`${process.env.REACT_APP_API_URL_BACKEND}/user/get-all-user`, {
     headers: { Authorization: `Bearer ${token}` },
