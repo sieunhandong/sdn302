@@ -21,12 +21,15 @@ const ProjectDetail = () => {
       try {
         const projectRes = await ProjectService.getProjectByProductId(projectId, token);
         const internRes = await InternService.getInternsByProject(projectId, token);
-        const candidateRes = await CandidateService.getCandidatesByProjectId(projectId, token);
+        let candidateRes;
+
+        try {
+          candidateRes = await CandidateService.getCandidatesByProjectId(projectId, token);
+        } catch (err) {
+          candidateRes = { status: "SUCCESS", data: [] }; // Nếu API lỗi, gán mảng rỗng
+        }
 
         setProject(projectRes.data);
-        console.log("project", projectRes.data)
-        console.log("project", projectRes.status)
-        console.log("project-status", projectRes.status)
         setInterns(internRes.status === "SUCCESS" ? internRes.data : []);
         setCandidates(candidateRes.status === "SUCCESS" ? candidateRes.data : []);
       } catch (err) {
@@ -39,19 +42,34 @@ const ProjectDetail = () => {
     fetchProjectDetails();
   }, [projectId]);
 
-  const handleAcceptCandidate = async (rollNumber) => {
+
+  const handleAcceptCandidate = async (id) => {
     try {
-      const response = await CandidateService.acceptCandidate(projectId, rollNumber);
+      const response = await CandidateService.acceptCandidate(projectId, id, token);
       if (response.status === "SUCCESS") {
         message.success("Candidate accepted as Intern!");
-        setCandidates(candidates.filter((c) => c.roll_number !== rollNumber));
-        setInterns([...interns, candidates.find((c) => c.roll_number === rollNumber)]);
+        setCandidates(candidates.filter((c) => c._id !== id));
+        setInterns([...interns, candidates.find((c) => c._id === id)]);
       } else {
         message.error("Failed to accept candidate.");
       }
     } catch (err) {
       console.error("Error accepting candidate:", err);
       message.error("An error occurred while accepting candidate.");
+    }
+  };
+  const handleRejectCandidate = async (id) => {
+    try {
+      const response = await CandidateService.rejectCandidate(projectId, id, token);
+      if (response.status === "SUCCESS") {
+        message.success("Candidate has been rejected!");
+        setCandidates(candidates.filter((c) => c._id !== id));
+      } else {
+        message.error("Failed to reject candidate.");
+      }
+    } catch (err) {
+      console.error("Error rejecting candidate:", err);
+      message.error("An error occurred while rejecting the candidate.");
     }
   };
 
@@ -86,25 +104,34 @@ const ProjectDetail = () => {
 
       {/* Hàng 2: Danh sách Candidates */}
       <h2 style={{ marginTop: "30px", fontSize: "22px", fontWeight: "bold" }}>Candidates Applying</h2>
-      <Table
-        columns={[
-          { title: "Full Name", dataIndex: "full_name", key: "full_name" },
-          { title: "Specialization", dataIndex: ["applicant_id", "specialization"], key: "specialization" },
-          {
-            title: "Accept",
-            key: "accept",
-            align: "center",
-            render: (_, record) => (
-              <Button type="primary" onClick={() => handleAcceptCandidate(record.roll_number)}>Accept</Button>
-            )
-          },
+      {candidates.length > 0 ? (
+        <Table
+          columns={[
+            { title: "Full Name", dataIndex: "full_name", key: "full_name" },
+            { title: "Roll Number", dataIndex: "roll_number", key: "roll_number" },
+            { title: "Gender", dataIndex: "gender", key: "gender" },
+            { title: "Specialization", dataIndex: "specialization", key: "specialization" },
+            {
+              title: "Actions",
+              key: "actions",
+              align: "center",
+              render: (_, record) => (
+                <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                  <Button type="primary" onClick={() => handleAcceptCandidate(record._id)}>Accept</Button>
+                  <Button type="primary" danger onClick={() => handleRejectCandidate(record._id)}>Reject</Button>
+                </div>
+              ),
+            },
+          ]}
+          dataSource={candidates}
+          rowKey="_id"
+          pagination={{ pageSize: 5 }}
+          bordered
+        />
+      ) : (
+        <p style={{ textAlign: "center", fontStyle: "italic", color: "gray" }}>No candidates applied yet.</p>
+      )}
 
-        ]}
-        dataSource={candidates}
-        rowKey="_id"
-        pagination={{ pageSize: 5 }}
-        bordered
-      />
 
       {/* Hàng 3: Danh sách Interns */}
       <h2 style={{ marginTop: "30px", fontSize: "22px", fontWeight: "bold" }}>Interns in Project</h2>
@@ -114,7 +141,7 @@ const ProjectDetail = () => {
           { title: "Position", dataIndex: ["position_id", "position_name"], key: "position" },
           { title: "Active", dataIndex: ["user_id", "is_active"], key: "active", render: (active) => <Tag color={active ? "green" : "red"}>{active ? "Active" : "Inactive"}</Tag> },
         ]}
-        dataSource={interns}
+        dataSource={interns || []}
         rowKey="_id"
         pagination={{ pageSize: 5 }}
         bordered
