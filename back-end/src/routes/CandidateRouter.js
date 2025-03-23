@@ -10,6 +10,7 @@ router.put("/accept-candidate/projects/:projectId/candidates/:candidateId", auth
 // danh sách candidate ứng tuyển của 1 project
 router.get("/get-candidate-by-project/:project_id", authMentorMiddleware, candidateController.getCandidatesByProjectId);
 router.post("/candidate-apply", candidateController.apply);
+router.delete("/projects/:projectId/candidates/:candidateId/reject", authMentorMiddleware, candidateController.rejectCandidate);
 
 module.exports = router;
 

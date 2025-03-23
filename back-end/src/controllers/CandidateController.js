@@ -2,6 +2,7 @@ const Project = require("../models/ProjectModel");
 const User = require("../models/UserModel");
 const Position = require("../models/PositionModel");
 const Application = require("../models/ApplicationModel");
+const Intern = require("../models/InternModel");
 
 const mongoose = require('mongoose')
 
@@ -73,9 +74,9 @@ const getCandidatesByProjectId = async (req, res, next) => {
         // Tạo danh sách ứng viên với thông tin đầy đủ
         const candidateData = candidates.map(c => {
             const app = applications.find(a => a.applicant_id.equals(c._id));
-            const position = positions.find(p => p._id.equals(app?.position_id));
-
+            const position = positions.find(p => p._id.equals(app?._id));
             return {
+                _id: c._id,
                 roll_number: c.roll_number,
                 full_name: `${c.first_name} ${c.last_name}`,
                 avatar: c.avatar || "default_avatar.png",
@@ -96,54 +97,42 @@ const getCandidatesByProjectId = async (req, res, next) => {
 
 //cập nhật candidate lên intern
 const acceptCandidate = async (req, res, next) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
         const { projectId, candidateId } = req.params;
-
         // Tìm và kiểm tra ứng viên trong Application
         const application = await Application.findOne({ applicant_id: candidateId })
             .populate("position_id")
-            .session(session);
-
-        if (!application || !application.position_id || application.position_id.project_id.toString() !== projectId) {
-            await session.abortTransaction();
-            return res.status(404).json({ status: "ERR", message: "Candidate has not applied for this project" });
-        }
+            .populate("mentor_id");
+        console.log("application", application.position_id)
+        // if (!application || !application.position_id || application.project_i !== projectId) {
+        //     return res.status(404).json({ status: "ERR", message: "Candidate has not applied for this project" });
+        // }
 
         // Tạo Intern từ Application
-        const newIntern = await Intern.create(
-            [{
-                user_id: candidateId,
-                project_id: projectId,
-                position_id: application.position_id._id,
-                start_date: new Date(),
-                status: "Active",
-            }],
-            { session }
-        );
+        const newIntern = await Intern.create({
+            user_id: candidateId,
+            project_id: projectId,
+            mentor_id: application.mentor_id,
+            position_id: application.position_id._id,
+            start_date: new Date(),
+            status: "Active",
+        });
 
         // Cập nhật vai trò của ứng viên thành INTERN
-        const updatedUser = await User.findByIdAndUpdate(candidateId, { role: "INTERN" }, { new: true }).session(session);
+        const updatedUser = await User.findByIdAndUpdate(candidateId, { role: "INTERN" }, { new: true });
         if (!updatedUser) {
-            await session.abortTransaction();
             return res.status(404).json({ status: "ERR", message: "Candidate not found" });
         }
 
         // Xóa ứng viên khỏi Application
-        await Application.deleteOne({ applicant_id: candidateId }).session(session);
-
-        await session.commitTransaction();
-        session.endSession();
+        await Application.deleteOne({ applicant_id: candidateId });
 
         res.status(200).json({ status: "SUCCESS", message: "Candidate accepted as Intern", data: newIntern });
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
         next(error);
     }
 };
+
 const apply = async (req, res, next) => {
     try {
         const { applicant_id, mentor_id, project_id, position_id } = req.body;
@@ -193,10 +182,30 @@ const apply = async (req, res, next) => {
         next(error);
     }
 };
+const rejectCandidate = async (req, res, next) => {
+    try {
+        const { projectId, candidateId } = req.params;
+
+        // Kiểm tra xem ứng viên có tồn tại trong bảng Application không
+        const application = await Application.findOne({ applicant_id: candidateId, project_id: projectId });
+
+        if (!application) {
+            return res.status(404).json({ status: "ERR", message: "Candidate not found in this project" });
+        }
+
+        // Xóa ứng viên khỏi Application
+        await Application.deleteOne({ applicant_id: candidateId, project_id: projectId });
+
+        res.status(200).json({ status: "SUCCESS", message: "Candidate has been rejected and removed" });
+    } catch (error) {
+        next(error);
+    }
+};
 
 module.exports = {
     getCandidatesByMentor,
     getCandidatesByProjectId,
     acceptCandidate,
-    apply
+    apply,
+    rejectCandidate
 };
