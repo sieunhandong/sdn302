@@ -23,7 +23,7 @@ const menuByRole = {
     MENTOR: [
         { title: "Home", path: "/", icon: <HomeOutlined /> },
         { title: "My Project", path: "/my-project", icon: <TeamOutlined /> },
-        { title: "Report Management", path: "/report-management", icon: <LockOutlined /> },
+        { title: "Report Management", path: "/report", icon: <LockOutlined /> },
         { title: "Message Management", path: "/message-management", icon: <LockOutlined /> },
         { title: "Attendance Management", path: "/attendance-management", icon: <LockOutlined /> },
         { title: "Recruitment Management", path: "/recruitment-management-mentor", icon: <LockOutlined /> },

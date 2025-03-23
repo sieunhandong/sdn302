@@ -6,7 +6,7 @@ const Schedule = require("./ScheduleRouter");
 const Mentor = require('./MentorRouter')
 const Candidate = require('./CandidateRouter')
 const Report = require('./ReportRouter')
-
+const Evaluation=require('./EvaluationRouter')
 
 
 const routes = (app) => {
@@ -18,6 +18,7 @@ const routes = (app) => {
   app.use('/api/mentor', Mentor);
   app.use('/api/candidate', Candidate);
   app.use('/api/report', Report)
+    app.use('/api/evaluation', Evaluation)
 
 }
 
