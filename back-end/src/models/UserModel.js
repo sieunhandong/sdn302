@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt')
+const { v4: uuidv4 } = require('uuid');
 
 const userSchema = new mongoose.Schema(
     {
-        roll_number: { type: String, required: true , unique: true},
-        first_name: { type: String, required: [true, 'First name is require'] },
-        last_name: { type: String, required: [true, 'Last name is require'] },
+        roll_number: { type: String, required: false, unique: true },
+        first_name: { type: String, required: false },
+        last_name: { type: String, required: false },
         avatar: { type: String },
         gender: { type: String, enum: ["MALE", "FEMALE", "OTHER"] },
         date_of_birth: { type: Date, required: false },
@@ -16,7 +17,7 @@ const userSchema = new mongoose.Schema(
             enum: ["ADMIN", "MENTOR", "CANDIDATE", "INTERN", "HR"],
             default: "CANDIDATE"
         },
-        phone: { type: String, required: [true, 'Phone is require'] },
+        phone: { type: String, required: false },
         specialization: { type: String },
         last_login: { type: Date },  // Changed to Date
         is_active: {
@@ -33,5 +34,25 @@ userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
     next();
 })
+// Tạo roll_number nếu không nhập
+userSchema.pre("save", async function (next) {
+    if (!this.roll_number) {
+        let newRollNumber;
+        let isDuplicate = true;
+
+        // Lặp để tránh trùng roll_number
+        while (isDuplicate) {
+            newRollNumber = `RN${Math.floor(100000 + Math.random() * 900000)}`; 
+            const existingUser = await mongoose.model("User").findOne({ roll_number: newRollNumber });
+            if (!existingUser) {
+                isDuplicate = false;
+            }
+        }
+
+        this.roll_number = newRollNumber;
+    }
+    next();
+});
+
 const User = mongoose.model("User", userSchema);
 module.exports = User;

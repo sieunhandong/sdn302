@@ -3,12 +3,20 @@ const dotenv = require('dotenv');
 const { default: mongoose } = require("mongoose");
 const routes = require('./routes');
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser')
+const cors = require('cors')
 dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 9999
 
 
+app.use(cors({
+    origin: 'http://localhost:3000',  // Chỉ định frontend
+    credentials: true                 // Cho phép gửi cookie
+}));
+// Middleware để parse cookie
+app.use(cookieParser());
 
 app.use(bodyParser.json())
 routes(app);

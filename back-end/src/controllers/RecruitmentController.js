@@ -42,63 +42,88 @@ const createRecruitment = async (req, res, next) => {
 };
 
 
-// const updateUser = async (req, res, next) => {
-//     try {
-//         const id = req.params.id;
-//         const {
-//             first_name,
-//             last_name,
-//             avatar,
-//             gender,
-//             date_of_birth,
-//             phone } = req.body;
+const getAllRecruitments = async (req, res, next) => {
+    try {
+        const recruitments = await Recruitment.find().populate("sender_id receiver_id", "first_name last_name email");
 
-//         // Kiểm tra xem id có hợp lệ không trước khi truy vấn
-//         if (!mongoose.Types.ObjectId.isValid(id)) {
-//             return reject({ statusCode: 400, message: "Invalid User ID format" });
-//         }
-//         const user = await User.findOne({
-//             _id: id
-//         })
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Fetched all recruitments successfully",
+            data: recruitments,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+const getAllRecruitmentsByMentorId = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const recruitments = await Recruitment.find({ sender_id: id }).populate("sender_id receiver_id", "first_name last_name email");
 
-//         if (user === null) {
-//             res.status(400).json({
-//                 status: 'OK',
-//                 message: 'The user is not defined'
-//             })
-//         }
-//         const updateUser = await User.findByIdAndUpdate(id, req.body, { new: true })
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Fetched all recruitments successfully",
+            data: recruitments,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+const updateRecruitment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { recruit_description, recruit_img, recruit_title, date_start, date_end } = req.body;
 
-//         res.status(200).json({
-//             status: 200,
-//             message: 'User updated success',
-//             data: {
-//                 _id: updateUser._id,
-//                 first_name: updateUser.first_name,
-//                 last_name: updateUser.last_name,
-//                 avatar: updateUser.avatar,
-//                 gender: updateUser.gender,
-//                 date_of_birth: updateUser.date_of_birth,
-//                 phone: updateUser.phone,
-//             }
-//         })
-//     } catch (e) {
-//         next(e)
-//     }
-// }
-// const getAllUsers = async () => {
-//     try {
-//         const users = await User.find({}, { password: 0 }); // Không trả về mật khẩu
-//         resolve({
-//             status: 'OK',
-//             message: 'Get all users successfully',
-//             data: users
-//         });
-//     } catch (e) {
-//         reject(e);
-//     }
-// }
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ status: "ERR", message: "Invalid recruitment ID" });
+        }
 
+        const updatedRecruitment = await Recruitment.findByIdAndUpdate(
+            id,
+            { recruit_description, recruit_img, recruit_title, date_start, date_end },
+            { new: true }
+        );
+
+        if (!updatedRecruitment) {
+            return res.status(404).json({ status: "ERR", message: "Recruitment not found" });
+        }
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Recruitment updated successfully",
+            data: updatedRecruitment,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteRecruitment = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ status: "ERR", message: "Invalid recruitment ID" });
+        }
+
+        const deletedRecruitment = await Recruitment.findByIdAndDelete(id);
+
+        if (!deletedRecruitment) {
+            return res.status(404).json({ status: "ERR", message: "Recruitment not found" });
+        }
+
+        res.status(200).json({
+            status: "SUCCESS",
+            message: "Recruitment deleted successfully",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 module.exports = {
-    createRecruitment
+    createRecruitment,
+    getAllRecruitments,
+    updateRecruitment,
+    deleteRecruitment,
+    getAllRecruitmentsByMentorId
 };
